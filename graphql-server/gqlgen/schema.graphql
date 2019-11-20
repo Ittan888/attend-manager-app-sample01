@@ -1,0 +1,69 @@
+type Query {
+  staffs: [Staff!]!
+  staff(id: ID!): Staff!
+  attend(staffId: ID! attendId: ID!): Attend!
+}
+
+type Mutation {
+
+  # staff mutation
+  createStaff(
+    name: String!
+    age: Int!
+    profileImagePath: String
+  ): Staff!
+
+  updateStaffProfile(
+    id: ID!
+    name: String
+    age: Int
+    profileImagePath: String
+  ): Staff!
+
+  updateStaffAttend(
+    staffId: ID!
+    attendId: ID! 
+    input: updateStaffAttendInput!
+  ): Attend!
+
+  deleteStaff(
+    id: ID!
+  ): Staff!
+
+  #attend mutation
+  cronUpdateAttend(
+    apiKey: String!
+  ): Attend!
+
+}
+
+input updateStaffAttendInput {
+  isAttend: Boolean
+  inTimeIndex: Int
+  outTimeIndex: Int
+}
+
+
+type Staff {
+  id: ID!
+  name: String
+  age: Int
+  attends: [Attend!]!
+  profileImagePath: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Attend {
+  id: ID!
+  dateStartTime: String!
+  staffInfo: Staff!
+  isAttend: Boolean!
+  inTimeIndex: Int!
+  outTimeIndex: Int!
+  createdAt: String!
+  updatedAt: String!
+}
+
+
+

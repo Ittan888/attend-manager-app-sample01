@@ -1,0 +1,21 @@
+
+type Staff {
+  id: ID! @id
+  name: String
+  age: Int
+  attends: [Attend!]! @relation(name: "Attends", onDelete: CASCADE)
+  profileImagePath: String @default(value: "")
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+}
+
+type Attend {
+  id: ID! @id
+  dateStartTime: DateTime!
+  staffInfo: Staff! @relation(name: "Attends")
+  isAttend: Boolean! @default(value: false)
+  inTimeIndex: Int! @default(value: -1)
+  outTimeIndex: Int! @default(value: -1)
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+}
