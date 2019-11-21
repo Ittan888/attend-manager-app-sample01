@@ -1,4 +1,14 @@
 
+type Admin {
+  id: ID! @id
+  name: String @default(value: "admin")
+  email: String! @unique
+  password: String! @unique
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+}
+
+
 type Staff {
   id: ID! @id
   name: String

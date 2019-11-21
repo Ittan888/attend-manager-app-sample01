@@ -2,6 +2,15 @@
 
 package gqlgen
 
+type Admin struct {
+	ID        string  `json:"id"`
+	Name      *string `json:"name"`
+	Email     string  `json:"email"`
+	Password  string  `json:"password"`
+	CreatedAt string  `json:"createdAt"`
+	UpdatedAt string  `json:"updatedAt"`
+}
+
 type UpdateStaffAttendInput struct {
 	IsAttend     *bool `json:"isAttend"`
 	InTimeIndex  *int  `json:"inTimeIndex"`

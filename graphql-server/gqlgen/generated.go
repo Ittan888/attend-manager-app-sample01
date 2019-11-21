@@ -45,6 +45,15 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Admin struct {
+		CreatedAt func(childComplexity int) int
+		Email     func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		Password  func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+	}
+
 	Attend struct {
 		CreatedAt     func(childComplexity int) int
 		DateStartTime func(childComplexity int) int
@@ -57,17 +66,18 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateStaff        func(childComplexity int, name string, age int, profileImagePath *string) int
-		CronUpdateAttend   func(childComplexity int, apiKey string) int
-		DeleteStaff        func(childComplexity int, id string) int
-		UpdateStaffAttend  func(childComplexity int, staffID string, attendID string, input UpdateStaffAttendInput) int
-		UpdateStaffProfile func(childComplexity int, id string, name *string, age *int, profileImagePath *string) int
+		CreateStaff        func(childComplexity int, authToken string, name string, age int, profileImagePath *string) int
+		CronUpdateAttend   func(childComplexity int, authToken string) int
+		DeleteStaff        func(childComplexity int, authToken string, id string) int
+		UpdateStaffAttend  func(childComplexity int, authToken string, staffID string, attendID string, input UpdateStaffAttendInput) int
+		UpdateStaffProfile func(childComplexity int, authToken string, id string, name *string, age *int, profileImagePath *string) int
 	}
 
 	Query struct {
-		Attend func(childComplexity int, staffID string, attendID string) int
-		Staff  func(childComplexity int, id string) int
-		Staffs func(childComplexity int) int
+		Attend       func(childComplexity int, staffID string, attendID string) int
+		GetAuthToken func(childComplexity int, email string, password string) int
+		Staff        func(childComplexity int, id string) int
+		Staffs       func(childComplexity int) int
 	}
 
 	Staff struct {
@@ -85,16 +95,17 @@ type AttendResolver interface {
 	StaffInfo(ctx context.Context, obj *prisma.Attend) (*prisma.Staff, error)
 }
 type MutationResolver interface {
-	CreateStaff(ctx context.Context, name string, age int, profileImagePath *string) (*prisma.Staff, error)
-	UpdateStaffProfile(ctx context.Context, id string, name *string, age *int, profileImagePath *string) (*prisma.Staff, error)
-	UpdateStaffAttend(ctx context.Context, staffID string, attendID string, input UpdateStaffAttendInput) (*prisma.Attend, error)
-	DeleteStaff(ctx context.Context, id string) (*prisma.Staff, error)
-	CronUpdateAttend(ctx context.Context, apiKey string) (*prisma.Attend, error)
+	CreateStaff(ctx context.Context, authToken string, name string, age int, profileImagePath *string) (*prisma.Staff, error)
+	UpdateStaffProfile(ctx context.Context, authToken string, id string, name *string, age *int, profileImagePath *string) (*prisma.Staff, error)
+	UpdateStaffAttend(ctx context.Context, authToken string, staffID string, attendID string, input UpdateStaffAttendInput) (*prisma.Attend, error)
+	DeleteStaff(ctx context.Context, authToken string, id string) (*prisma.Staff, error)
+	CronUpdateAttend(ctx context.Context, authToken string) (*prisma.Attend, error)
 }
 type QueryResolver interface {
 	Staffs(ctx context.Context) ([]*prisma.Staff, error)
 	Staff(ctx context.Context, id string) (*prisma.Staff, error)
 	Attend(ctx context.Context, staffID string, attendID string) (*prisma.Attend, error)
+	GetAuthToken(ctx context.Context, email string, password string) (string, error)
 }
 type StaffResolver interface {
 	Attends(ctx context.Context, obj *prisma.Staff) ([]*prisma.Attend, error)
@@ -114,6 +125,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Admin.createdAt":
+		if e.complexity.Admin.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Admin.CreatedAt(childComplexity), true
+
+	case "Admin.email":
+		if e.complexity.Admin.Email == nil {
+			break
+		}
+
+		return e.complexity.Admin.Email(childComplexity), true
+
+	case "Admin.id":
+		if e.complexity.Admin.ID == nil {
+			break
+		}
+
+		return e.complexity.Admin.ID(childComplexity), true
+
+	case "Admin.name":
+		if e.complexity.Admin.Name == nil {
+			break
+		}
+
+		return e.complexity.Admin.Name(childComplexity), true
+
+	case "Admin.password":
+		if e.complexity.Admin.Password == nil {
+			break
+		}
+
+		return e.complexity.Admin.Password(childComplexity), true
+
+	case "Admin.updatedAt":
+		if e.complexity.Admin.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Admin.UpdatedAt(childComplexity), true
 
 	case "Attend.createdAt":
 		if e.complexity.Attend.CreatedAt == nil {
@@ -181,7 +234,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateStaff(childComplexity, args["name"].(string), args["age"].(int), args["profileImagePath"].(*string)), true
+		return e.complexity.Mutation.CreateStaff(childComplexity, args["authToken"].(string), args["name"].(string), args["age"].(int), args["profileImagePath"].(*string)), true
 
 	case "Mutation.cronUpdateAttend":
 		if e.complexity.Mutation.CronUpdateAttend == nil {
@@ -193,7 +246,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CronUpdateAttend(childComplexity, args["apiKey"].(string)), true
+		return e.complexity.Mutation.CronUpdateAttend(childComplexity, args["authToken"].(string)), true
 
 	case "Mutation.deleteStaff":
 		if e.complexity.Mutation.DeleteStaff == nil {
@@ -205,7 +258,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteStaff(childComplexity, args["id"].(string)), true
+		return e.complexity.Mutation.DeleteStaff(childComplexity, args["authToken"].(string), args["id"].(string)), true
 
 	case "Mutation.updateStaffAttend":
 		if e.complexity.Mutation.UpdateStaffAttend == nil {
@@ -217,7 +270,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateStaffAttend(childComplexity, args["staffId"].(string), args["attendId"].(string), args["input"].(UpdateStaffAttendInput)), true
+		return e.complexity.Mutation.UpdateStaffAttend(childComplexity, args["authToken"].(string), args["staffId"].(string), args["attendId"].(string), args["input"].(UpdateStaffAttendInput)), true
 
 	case "Mutation.updateStaffProfile":
 		if e.complexity.Mutation.UpdateStaffProfile == nil {
@@ -229,7 +282,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateStaffProfile(childComplexity, args["id"].(string), args["name"].(*string), args["age"].(*int), args["profileImagePath"].(*string)), true
+		return e.complexity.Mutation.UpdateStaffProfile(childComplexity, args["authToken"].(string), args["id"].(string), args["name"].(*string), args["age"].(*int), args["profileImagePath"].(*string)), true
 
 	case "Query.attend":
 		if e.complexity.Query.Attend == nil {
@@ -242,6 +295,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Attend(childComplexity, args["staffId"].(string), args["attendId"].(string)), true
+
+	case "Query.getAuthToken":
+		if e.complexity.Query.GetAuthToken == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getAuthToken_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAuthToken(childComplexity, args["email"].(string), args["password"].(string)), true
 
 	case "Query.staff":
 		if e.complexity.Query.Staff == nil {
@@ -377,18 +442,21 @@ var parsedSchema = gqlparser.MustLoadSchema(
   staffs: [Staff!]!
   staff(id: ID!): Staff!
   attend(staffId: ID! attendId: ID!): Attend!
+  getAuthToken(email: String! password: String!): String!
 }
 
 type Mutation {
 
   # staff mutation
   createStaff(
+    authToken: String!
     name: String!
     age: Int!
     profileImagePath: String
   ): Staff!
 
   updateStaffProfile(
+    authToken: String!
     id: ID!
     name: String
     age: Int
@@ -396,18 +464,20 @@ type Mutation {
   ): Staff!
 
   updateStaffAttend(
+    authToken: String!
     staffId: ID!
     attendId: ID! 
     input: updateStaffAttendInput!
   ): Attend!
 
   deleteStaff(
+    authToken: String!
     id: ID!
   ): Staff!
 
   #attend mutation
   cronUpdateAttend(
-    apiKey: String!
+    authToken: String!
   ): Attend!
 
 }
@@ -416,6 +486,16 @@ input updateStaffAttendInput {
   isAttend: Boolean
   inTimeIndex: Int
   outTimeIndex: Int
+}
+
+
+type Admin {
+  id: ID!
+  name: String
+  email: String!
+  password: String!
+  createdAt: String!
+  updatedAt: String!
 }
 
 
@@ -453,112 +533,24 @@ func (ec *executionContext) field_Mutation_createStaff_args(ctx context.Context,
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["name"]; ok {
+	if tmp, ok := rawArgs["authToken"]; ok {
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["name"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["age"]; ok {
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["age"] = arg1
-	var arg2 *string
-	if tmp, ok := rawArgs["profileImagePath"]; ok {
-		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["profileImagePath"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_cronUpdateAttend_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["apiKey"]; ok {
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["apiKey"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteStaff_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateStaffAttend_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["staffId"]; ok {
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["staffId"] = arg0
+	args["authToken"] = arg0
 	var arg1 string
-	if tmp, ok := rawArgs["attendId"]; ok {
-		arg1, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["attendId"] = arg1
-	var arg2 UpdateStaffAttendInput
-	if tmp, ok := rawArgs["input"]; ok {
-		arg2, err = ec.unmarshalNupdateStaffAttendInput2demo13ᚋgqlgenᚐUpdateStaffAttendInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateStaffProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 *string
 	if tmp, ok := rawArgs["name"]; ok {
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["name"] = arg1
-	var arg2 *int
+	var arg2 int
 	if tmp, ok := rawArgs["age"]; ok {
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -572,6 +564,126 @@ func (ec *executionContext) field_Mutation_updateStaffProfile_args(ctx context.C
 		}
 	}
 	args["profileImagePath"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_cronUpdateAttend_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["authToken"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["authToken"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteStaff_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["authToken"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["authToken"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["id"]; ok {
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateStaffAttend_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["authToken"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["authToken"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["staffId"]; ok {
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["staffId"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["attendId"]; ok {
+		arg2, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["attendId"] = arg2
+	var arg3 UpdateStaffAttendInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg3, err = ec.unmarshalNupdateStaffAttendInput2demo13ᚋgqlgenᚐUpdateStaffAttendInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateStaffProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["authToken"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["authToken"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["id"]; ok {
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["age"]; ok {
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["age"] = arg3
+	var arg4 *string
+	if tmp, ok := rawArgs["profileImagePath"]; ok {
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["profileImagePath"] = arg4
 	return args, nil
 }
 
@@ -608,6 +720,28 @@ func (ec *executionContext) field_Query_attend_args(ctx context.Context, rawArgs
 		}
 	}
 	args["attendId"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getAuthToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["email"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["password"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["password"] = arg1
 	return args, nil
 }
 
@@ -660,6 +794,225 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Admin_id(ctx context.Context, field graphql.CollectedField, obj *Admin) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Admin",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Admin_name(ctx context.Context, field graphql.CollectedField, obj *Admin) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Admin",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Admin_email(ctx context.Context, field graphql.CollectedField, obj *Admin) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Admin",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Admin_password(ctx context.Context, field graphql.CollectedField, obj *Admin) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Admin",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Password, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Admin_createdAt(ctx context.Context, field graphql.CollectedField, obj *Admin) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Admin",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Admin_updatedAt(ctx context.Context, field graphql.CollectedField, obj *Admin) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Admin",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Attend_id(ctx context.Context, field graphql.CollectedField, obj *prisma.Attend) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
@@ -983,7 +1336,7 @@ func (ec *executionContext) _Mutation_createStaff(ctx context.Context, field gra
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateStaff(rctx, args["name"].(string), args["age"].(int), args["profileImagePath"].(*string))
+		return ec.resolvers.Mutation().CreateStaff(rctx, args["authToken"].(string), args["name"].(string), args["age"].(int), args["profileImagePath"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1027,7 +1380,7 @@ func (ec *executionContext) _Mutation_updateStaffProfile(ctx context.Context, fi
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateStaffProfile(rctx, args["id"].(string), args["name"].(*string), args["age"].(*int), args["profileImagePath"].(*string))
+		return ec.resolvers.Mutation().UpdateStaffProfile(rctx, args["authToken"].(string), args["id"].(string), args["name"].(*string), args["age"].(*int), args["profileImagePath"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1071,7 +1424,7 @@ func (ec *executionContext) _Mutation_updateStaffAttend(ctx context.Context, fie
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateStaffAttend(rctx, args["staffId"].(string), args["attendId"].(string), args["input"].(UpdateStaffAttendInput))
+		return ec.resolvers.Mutation().UpdateStaffAttend(rctx, args["authToken"].(string), args["staffId"].(string), args["attendId"].(string), args["input"].(UpdateStaffAttendInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1115,7 +1468,7 @@ func (ec *executionContext) _Mutation_deleteStaff(ctx context.Context, field gra
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteStaff(rctx, args["id"].(string))
+		return ec.resolvers.Mutation().DeleteStaff(rctx, args["authToken"].(string), args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1159,7 +1512,7 @@ func (ec *executionContext) _Mutation_cronUpdateAttend(ctx context.Context, fiel
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CronUpdateAttend(rctx, args["apiKey"].(string))
+		return ec.resolvers.Mutation().CronUpdateAttend(rctx, args["authToken"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1300,6 +1653,50 @@ func (ec *executionContext) _Query_attend(ctx context.Context, field graphql.Col
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNAttend2ᚖdemo13ᚋprismaᚐAttend(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getAuthToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getAuthToken_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAuthToken(rctx, args["email"].(string), args["password"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2816,6 +3213,55 @@ func (ec *executionContext) unmarshalInputupdateStaffAttendInput(ctx context.Con
 
 // region    **************************** object.gotpl ****************************
 
+var adminImplementors = []string{"Admin"}
+
+func (ec *executionContext) _Admin(ctx context.Context, sel ast.SelectionSet, obj *Admin) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, adminImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Admin")
+		case "id":
+			out.Values[i] = ec._Admin_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Admin_name(ctx, field, obj)
+		case "email":
+			out.Values[i] = ec._Admin_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "password":
+			out.Values[i] = ec._Admin_password(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._Admin_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._Admin_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var attendImplementors = []string{"Attend"}
 
 func (ec *executionContext) _Attend(ctx context.Context, sel ast.SelectionSet, obj *prisma.Attend) graphql.Marshaler {
@@ -2990,6 +3436,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_attend(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getAuthToken":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAuthToken(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

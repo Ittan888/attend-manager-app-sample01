@@ -62,6 +62,104 @@ func (client *Client) GraphQL(ctx context.Context, query string, variables map[s
 var DefaultEndpoint = "http://localhost:4466"
 var Secret = ""
 
+func (client *Client) Admin(params AdminWhereUniqueInput) *AdminExec {
+	ret := client.Client.GetOne(
+		nil,
+		params,
+		[2]string{"AdminWhereUniqueInput!", "Admin"},
+		"admin",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExec{ret}
+}
+
+type AdminsParams struct {
+	Where   *AdminWhereInput   `json:"where,omitempty"`
+	OrderBy *AdminOrderByInput `json:"orderBy,omitempty"`
+	Skip    *int32             `json:"skip,omitempty"`
+	After   *string            `json:"after,omitempty"`
+	Before  *string            `json:"before,omitempty"`
+	First   *int32             `json:"first,omitempty"`
+	Last    *int32             `json:"last,omitempty"`
+}
+
+func (client *Client) Admins(params *AdminsParams) *AdminExecArray {
+	var wparams *prisma.WhereParams
+	if params != nil {
+		wparams = &prisma.WhereParams{
+			Where:   params.Where,
+			OrderBy: (*string)(params.OrderBy),
+			Skip:    params.Skip,
+			After:   params.After,
+			Before:  params.Before,
+			First:   params.First,
+			Last:    params.Last,
+		}
+	}
+
+	ret := client.Client.GetMany(
+		nil,
+		wparams,
+		[3]string{"AdminWhereInput", "AdminOrderByInput", "Admin"},
+		"admins",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExecArray{ret}
+}
+
+type AdminsConnectionParams struct {
+	Where   *AdminWhereInput   `json:"where,omitempty"`
+	OrderBy *AdminOrderByInput `json:"orderBy,omitempty"`
+	Skip    *int32             `json:"skip,omitempty"`
+	After   *string            `json:"after,omitempty"`
+	Before  *string            `json:"before,omitempty"`
+	First   *int32             `json:"first,omitempty"`
+	Last    *int32             `json:"last,omitempty"`
+}
+
+// Nodes return just nodes without cursors. It uses the already fetched edges.
+func (s *AdminConnection) Nodes() []Admin {
+	var nodes []Admin
+	for _, edge := range s.Edges {
+		nodes = append(nodes, edge.Node)
+	}
+	return nodes
+}
+
+// Nodes return just nodes without cursors, but as a slice of pointers. It uses the already fetched edges.
+func (s *AdminConnection) NodesPtr() []*Admin {
+	var nodes []*Admin
+	for _, edge := range s.Edges {
+		item := edge
+		nodes = append(nodes, &item.Node)
+	}
+	return nodes
+}
+
+func (client *Client) AdminsConnection(params *AdminsConnectionParams) *AdminConnectionExec {
+	var wparams *prisma.WhereParams
+	if params != nil {
+		wparams = &prisma.WhereParams{
+			Where:   params.Where,
+			OrderBy: (*string)(params.OrderBy),
+			Skip:    params.Skip,
+			After:   params.After,
+			Before:  params.Before,
+			First:   params.First,
+			Last:    params.Last,
+		}
+	}
+
+	ret := client.Client.GetMany(
+		nil,
+		wparams,
+		[3]string{"AdminWhereInput", "AdminOrderByInput", "Admin"},
+		"adminsConnection",
+		[]string{"edges", "pageInfo"})
+
+	return &AdminConnectionExec{ret}
+}
+
 func (client *Client) Attend(params AttendWhereUniqueInput) *AttendExec {
 	ret := client.Client.GetOne(
 		nil,
@@ -258,6 +356,86 @@ func (client *Client) StaffsConnection(params *StaffsConnectionParams) *StaffCon
 	return &StaffConnectionExec{ret}
 }
 
+func (client *Client) CreateAdmin(params AdminCreateInput) *AdminExec {
+	ret := client.Client.Create(
+		params,
+		[2]string{"AdminCreateInput!", "Admin"},
+		"createAdmin",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExec{ret}
+}
+
+type AdminUpdateParams struct {
+	Data  AdminUpdateInput      `json:"data"`
+	Where AdminWhereUniqueInput `json:"where"`
+}
+
+func (client *Client) UpdateAdmin(params AdminUpdateParams) *AdminExec {
+	ret := client.Client.Update(
+		prisma.UpdateParams{
+			Data:  params.Data,
+			Where: params.Where,
+		},
+		[3]string{"AdminUpdateInput!", "AdminWhereUniqueInput!", "Admin"},
+		"updateAdmin",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExec{ret}
+}
+
+type AdminUpdateManyParams struct {
+	Data  AdminUpdateManyMutationInput `json:"data"`
+	Where *AdminWhereInput             `json:"where,omitempty"`
+}
+
+func (client *Client) UpdateManyAdmins(params AdminUpdateManyParams) *BatchPayloadExec {
+	exec := client.Client.UpdateMany(
+		prisma.UpdateParams{
+			Data:  params.Data,
+			Where: params.Where,
+		},
+		[2]string{"AdminUpdateManyMutationInput!", "AdminWhereInput"},
+		"updateManyAdmins")
+	return &BatchPayloadExec{exec}
+}
+
+type AdminUpsertParams struct {
+	Where  AdminWhereUniqueInput `json:"where"`
+	Create AdminCreateInput      `json:"create"`
+	Update AdminUpdateInput      `json:"update"`
+}
+
+func (client *Client) UpsertAdmin(params AdminUpsertParams) *AdminExec {
+	uparams := &prisma.UpsertParams{
+		Where:  params.Where,
+		Create: params.Create,
+		Update: params.Update,
+	}
+	ret := client.Client.Upsert(
+		uparams,
+		[4]string{"AdminWhereUniqueInput!", "AdminCreateInput!", "AdminUpdateInput!", "Admin"},
+		"upsertAdmin",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExec{ret}
+}
+
+func (client *Client) DeleteAdmin(params AdminWhereUniqueInput) *AdminExec {
+	ret := client.Client.Delete(
+		params,
+		[2]string{"AdminWhereUniqueInput!", "Admin"},
+		"deleteAdmin",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExec{ret}
+}
+
+func (client *Client) DeleteManyAdmins(params *AdminWhereInput) *BatchPayloadExec {
+	exec := client.Client.DeleteMany(params, "AdminWhereInput", "deleteManyAdmins")
+	return &BatchPayloadExec{exec}
+}
+
 func (client *Client) CreateAttend(params AttendCreateInput) *AttendExec {
 	ret := client.Client.Create(
 		params,
@@ -418,6 +596,23 @@ func (client *Client) DeleteManyStaffs(params *StaffWhereInput) *BatchPayloadExe
 	return &BatchPayloadExec{exec}
 }
 
+type AdminOrderByInput string
+
+const (
+	AdminOrderByInputIDAsc         AdminOrderByInput = "id_ASC"
+	AdminOrderByInputIDDesc        AdminOrderByInput = "id_DESC"
+	AdminOrderByInputNameAsc       AdminOrderByInput = "name_ASC"
+	AdminOrderByInputNameDesc      AdminOrderByInput = "name_DESC"
+	AdminOrderByInputEmailAsc      AdminOrderByInput = "email_ASC"
+	AdminOrderByInputEmailDesc     AdminOrderByInput = "email_DESC"
+	AdminOrderByInputPasswordAsc   AdminOrderByInput = "password_ASC"
+	AdminOrderByInputPasswordDesc  AdminOrderByInput = "password_DESC"
+	AdminOrderByInputCreatedAtAsc  AdminOrderByInput = "createdAt_ASC"
+	AdminOrderByInputCreatedAtDesc AdminOrderByInput = "createdAt_DESC"
+	AdminOrderByInputUpdatedAtAsc  AdminOrderByInput = "updatedAt_ASC"
+	AdminOrderByInputUpdatedAtDesc AdminOrderByInput = "updatedAt_DESC"
+)
+
 type AttendOrderByInput string
 
 const (
@@ -437,6 +632,14 @@ const (
 	AttendOrderByInputUpdatedAtDesc     AttendOrderByInput = "updatedAt_DESC"
 )
 
+type MutationType string
+
+const (
+	MutationTypeCreated MutationType = "CREATED"
+	MutationTypeUpdated MutationType = "UPDATED"
+	MutationTypeDeleted MutationType = "DELETED"
+)
+
 type StaffOrderByInput string
 
 const (
@@ -454,38 +657,6 @@ const (
 	StaffOrderByInputUpdatedAtDesc        StaffOrderByInput = "updatedAt_DESC"
 )
 
-type MutationType string
-
-const (
-	MutationTypeCreated MutationType = "CREATED"
-	MutationTypeUpdated MutationType = "UPDATED"
-	MutationTypeDeleted MutationType = "DELETED"
-)
-
-type StaffUpdateOneRequiredWithoutAttendsInput struct {
-	Create  *StaffCreateWithoutAttendsInput     `json:"create,omitempty"`
-	Update  *StaffUpdateWithoutAttendsDataInput `json:"update,omitempty"`
-	Upsert  *StaffUpsertWithoutAttendsInput     `json:"upsert,omitempty"`
-	Connect *StaffWhereUniqueInput              `json:"connect,omitempty"`
-}
-
-type AttendWhereUniqueInput struct {
-	ID *string `json:"id,omitempty"`
-}
-
-type AttendUpdateWithWhereUniqueWithoutStaffInfoInput struct {
-	Where AttendWhereUniqueInput                `json:"where"`
-	Data  AttendUpdateWithoutStaffInfoDataInput `json:"data"`
-}
-
-type StaffCreateInput struct {
-	ID               *string                                `json:"id,omitempty"`
-	Name             *string                                `json:"name,omitempty"`
-	Age              *int32                                 `json:"age,omitempty"`
-	Attends          *AttendCreateManyWithoutStaffInfoInput `json:"attends,omitempty"`
-	ProfileImagePath *string                                `json:"profileImagePath,omitempty"`
-}
-
 type AttendUpdateManyWithoutStaffInfoInput struct {
 	Create     []AttendCreateWithoutStaffInfoInput                `json:"create,omitempty"`
 	Delete     []AttendWhereUniqueInput                           `json:"delete,omitempty"`
@@ -498,9 +669,141 @@ type AttendUpdateManyWithoutStaffInfoInput struct {
 	UpdateMany []AttendUpdateManyWithWhereNestedInput             `json:"updateMany,omitempty"`
 }
 
-type StaffUpsertWithoutAttendsInput struct {
-	Update StaffUpdateWithoutAttendsDataInput `json:"update"`
-	Create StaffCreateWithoutAttendsInput     `json:"create"`
+type StaffUpdateOneRequiredWithoutAttendsInput struct {
+	Create  *StaffCreateWithoutAttendsInput     `json:"create,omitempty"`
+	Update  *StaffUpdateWithoutAttendsDataInput `json:"update,omitempty"`
+	Upsert  *StaffUpsertWithoutAttendsInput     `json:"upsert,omitempty"`
+	Connect *StaffWhereUniqueInput              `json:"connect,omitempty"`
+}
+
+type StaffWhereUniqueInput struct {
+	ID *string `json:"id,omitempty"`
+}
+
+type AdminWhereUniqueInput struct {
+	ID       *string `json:"id,omitempty"`
+	Email    *string `json:"email,omitempty"`
+	Password *string `json:"password,omitempty"`
+}
+
+type AttendSubscriptionWhereInput struct {
+	MutationIn                 []MutationType                 `json:"mutation_in,omitempty"`
+	UpdatedFieldsContains      *string                        `json:"updatedFields_contains,omitempty"`
+	UpdatedFieldsContainsEvery []string                       `json:"updatedFields_contains_every,omitempty"`
+	UpdatedFieldsContainsSome  []string                       `json:"updatedFields_contains_some,omitempty"`
+	Node                       *AttendWhereInput              `json:"node,omitempty"`
+	And                        []AttendSubscriptionWhereInput `json:"AND,omitempty"`
+	Or                         []AttendSubscriptionWhereInput `json:"OR,omitempty"`
+	Not                        []AttendSubscriptionWhereInput `json:"NOT,omitempty"`
+}
+
+type AdminSubscriptionWhereInput struct {
+	MutationIn                 []MutationType                `json:"mutation_in,omitempty"`
+	UpdatedFieldsContains      *string                       `json:"updatedFields_contains,omitempty"`
+	UpdatedFieldsContainsEvery []string                      `json:"updatedFields_contains_every,omitempty"`
+	UpdatedFieldsContainsSome  []string                      `json:"updatedFields_contains_some,omitempty"`
+	Node                       *AdminWhereInput              `json:"node,omitempty"`
+	And                        []AdminSubscriptionWhereInput `json:"AND,omitempty"`
+	Or                         []AdminSubscriptionWhereInput `json:"OR,omitempty"`
+	Not                        []AdminSubscriptionWhereInput `json:"NOT,omitempty"`
+}
+
+type AttendCreateManyWithoutStaffInfoInput struct {
+	Create  []AttendCreateWithoutStaffInfoInput `json:"create,omitempty"`
+	Connect []AttendWhereUniqueInput            `json:"connect,omitempty"`
+}
+
+type AttendUpdateManyDataInput struct {
+	DateStartTime *string `json:"dateStartTime,omitempty"`
+	IsAttend      *bool   `json:"isAttend,omitempty"`
+	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
+	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
+}
+
+type StaffCreateInput struct {
+	ID               *string                                `json:"id,omitempty"`
+	Name             *string                                `json:"name,omitempty"`
+	Age              *int32                                 `json:"age,omitempty"`
+	Attends          *AttendCreateManyWithoutStaffInfoInput `json:"attends,omitempty"`
+	ProfileImagePath *string                                `json:"profileImagePath,omitempty"`
+}
+
+type AttendScalarWhereInput struct {
+	ID                 *string                  `json:"id,omitempty"`
+	IDNot              *string                  `json:"id_not,omitempty"`
+	IDIn               []string                 `json:"id_in,omitempty"`
+	IDNotIn            []string                 `json:"id_not_in,omitempty"`
+	IDLt               *string                  `json:"id_lt,omitempty"`
+	IDLte              *string                  `json:"id_lte,omitempty"`
+	IDGt               *string                  `json:"id_gt,omitempty"`
+	IDGte              *string                  `json:"id_gte,omitempty"`
+	IDContains         *string                  `json:"id_contains,omitempty"`
+	IDNotContains      *string                  `json:"id_not_contains,omitempty"`
+	IDStartsWith       *string                  `json:"id_starts_with,omitempty"`
+	IDNotStartsWith    *string                  `json:"id_not_starts_with,omitempty"`
+	IDEndsWith         *string                  `json:"id_ends_with,omitempty"`
+	IDNotEndsWith      *string                  `json:"id_not_ends_with,omitempty"`
+	DateStartTime      *string                  `json:"dateStartTime,omitempty"`
+	DateStartTimeNot   *string                  `json:"dateStartTime_not,omitempty"`
+	DateStartTimeIn    []string                 `json:"dateStartTime_in,omitempty"`
+	DateStartTimeNotIn []string                 `json:"dateStartTime_not_in,omitempty"`
+	DateStartTimeLt    *string                  `json:"dateStartTime_lt,omitempty"`
+	DateStartTimeLte   *string                  `json:"dateStartTime_lte,omitempty"`
+	DateStartTimeGt    *string                  `json:"dateStartTime_gt,omitempty"`
+	DateStartTimeGte   *string                  `json:"dateStartTime_gte,omitempty"`
+	IsAttend           *bool                    `json:"isAttend,omitempty"`
+	IsAttendNot        *bool                    `json:"isAttend_not,omitempty"`
+	InTimeIndex        *int32                   `json:"inTimeIndex,omitempty"`
+	InTimeIndexNot     *int32                   `json:"inTimeIndex_not,omitempty"`
+	InTimeIndexIn      []int32                  `json:"inTimeIndex_in,omitempty"`
+	InTimeIndexNotIn   []int32                  `json:"inTimeIndex_not_in,omitempty"`
+	InTimeIndexLt      *int32                   `json:"inTimeIndex_lt,omitempty"`
+	InTimeIndexLte     *int32                   `json:"inTimeIndex_lte,omitempty"`
+	InTimeIndexGt      *int32                   `json:"inTimeIndex_gt,omitempty"`
+	InTimeIndexGte     *int32                   `json:"inTimeIndex_gte,omitempty"`
+	OutTimeIndex       *int32                   `json:"outTimeIndex,omitempty"`
+	OutTimeIndexNot    *int32                   `json:"outTimeIndex_not,omitempty"`
+	OutTimeIndexIn     []int32                  `json:"outTimeIndex_in,omitempty"`
+	OutTimeIndexNotIn  []int32                  `json:"outTimeIndex_not_in,omitempty"`
+	OutTimeIndexLt     *int32                   `json:"outTimeIndex_lt,omitempty"`
+	OutTimeIndexLte    *int32                   `json:"outTimeIndex_lte,omitempty"`
+	OutTimeIndexGt     *int32                   `json:"outTimeIndex_gt,omitempty"`
+	OutTimeIndexGte    *int32                   `json:"outTimeIndex_gte,omitempty"`
+	CreatedAt          *string                  `json:"createdAt,omitempty"`
+	CreatedAtNot       *string                  `json:"createdAt_not,omitempty"`
+	CreatedAtIn        []string                 `json:"createdAt_in,omitempty"`
+	CreatedAtNotIn     []string                 `json:"createdAt_not_in,omitempty"`
+	CreatedAtLt        *string                  `json:"createdAt_lt,omitempty"`
+	CreatedAtLte       *string                  `json:"createdAt_lte,omitempty"`
+	CreatedAtGt        *string                  `json:"createdAt_gt,omitempty"`
+	CreatedAtGte       *string                  `json:"createdAt_gte,omitempty"`
+	UpdatedAt          *string                  `json:"updatedAt,omitempty"`
+	UpdatedAtNot       *string                  `json:"updatedAt_not,omitempty"`
+	UpdatedAtIn        []string                 `json:"updatedAt_in,omitempty"`
+	UpdatedAtNotIn     []string                 `json:"updatedAt_not_in,omitempty"`
+	UpdatedAtLt        *string                  `json:"updatedAt_lt,omitempty"`
+	UpdatedAtLte       *string                  `json:"updatedAt_lte,omitempty"`
+	UpdatedAtGt        *string                  `json:"updatedAt_gt,omitempty"`
+	UpdatedAtGte       *string                  `json:"updatedAt_gte,omitempty"`
+	And                []AttendScalarWhereInput `json:"AND,omitempty"`
+	Or                 []AttendScalarWhereInput `json:"OR,omitempty"`
+	Not                []AttendScalarWhereInput `json:"NOT,omitempty"`
+}
+
+type AttendUpdateManyMutationInput struct {
+	DateStartTime *string `json:"dateStartTime,omitempty"`
+	IsAttend      *bool   `json:"isAttend,omitempty"`
+	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
+	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
+}
+
+type AttendWhereUniqueInput struct {
+	ID *string `json:"id,omitempty"`
+}
+
+type AttendUpdateWithWhereUniqueWithoutStaffInfoInput struct {
+	Where AttendWhereUniqueInput                `json:"where"`
+	Data  AttendUpdateWithoutStaffInfoDataInput `json:"data"`
 }
 
 type StaffWhereInput struct {
@@ -578,15 +881,163 @@ type StaffWhereInput struct {
 	Not                           []StaffWhereInput `json:"NOT,omitempty"`
 }
 
-type AttendSubscriptionWhereInput struct {
-	MutationIn                 []MutationType                 `json:"mutation_in,omitempty"`
-	UpdatedFieldsContains      *string                        `json:"updatedFields_contains,omitempty"`
-	UpdatedFieldsContainsEvery []string                       `json:"updatedFields_contains_every,omitempty"`
-	UpdatedFieldsContainsSome  []string                       `json:"updatedFields_contains_some,omitempty"`
-	Node                       *AttendWhereInput              `json:"node,omitempty"`
-	And                        []AttendSubscriptionWhereInput `json:"AND,omitempty"`
-	Or                         []AttendSubscriptionWhereInput `json:"OR,omitempty"`
-	Not                        []AttendSubscriptionWhereInput `json:"NOT,omitempty"`
+type AdminCreateInput struct {
+	ID       *string `json:"id,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	Email    string  `json:"email"`
+	Password string  `json:"password"`
+}
+
+type StaffSubscriptionWhereInput struct {
+	MutationIn                 []MutationType                `json:"mutation_in,omitempty"`
+	UpdatedFieldsContains      *string                       `json:"updatedFields_contains,omitempty"`
+	UpdatedFieldsContainsEvery []string                      `json:"updatedFields_contains_every,omitempty"`
+	UpdatedFieldsContainsSome  []string                      `json:"updatedFields_contains_some,omitempty"`
+	Node                       *StaffWhereInput              `json:"node,omitempty"`
+	And                        []StaffSubscriptionWhereInput `json:"AND,omitempty"`
+	Or                         []StaffSubscriptionWhereInput `json:"OR,omitempty"`
+	Not                        []StaffSubscriptionWhereInput `json:"NOT,omitempty"`
+}
+
+type AdminUpdateInput struct {
+	Name     *string `json:"name,omitempty"`
+	Email    *string `json:"email,omitempty"`
+	Password *string `json:"password,omitempty"`
+}
+
+type AttendCreateWithoutStaffInfoInput struct {
+	ID            *string `json:"id,omitempty"`
+	DateStartTime string  `json:"dateStartTime"`
+	IsAttend      *bool   `json:"isAttend,omitempty"`
+	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
+	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
+}
+
+type AdminUpdateManyMutationInput struct {
+	Name     *string `json:"name,omitempty"`
+	Email    *string `json:"email,omitempty"`
+	Password *string `json:"password,omitempty"`
+}
+
+type AttendUpdateManyWithWhereNestedInput struct {
+	Where AttendScalarWhereInput    `json:"where"`
+	Data  AttendUpdateManyDataInput `json:"data"`
+}
+
+type StaffUpsertWithoutAttendsInput struct {
+	Update StaffUpdateWithoutAttendsDataInput `json:"update"`
+	Create StaffCreateWithoutAttendsInput     `json:"create"`
+}
+
+type AttendUpdateWithoutStaffInfoDataInput struct {
+	DateStartTime *string `json:"dateStartTime,omitempty"`
+	IsAttend      *bool   `json:"isAttend,omitempty"`
+	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
+	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
+}
+
+type StaffUpdateWithoutAttendsDataInput struct {
+	Name             *string `json:"name,omitempty"`
+	Age              *int32  `json:"age,omitempty"`
+	ProfileImagePath *string `json:"profileImagePath,omitempty"`
+}
+
+type AdminWhereInput struct {
+	ID                    *string           `json:"id,omitempty"`
+	IDNot                 *string           `json:"id_not,omitempty"`
+	IDIn                  []string          `json:"id_in,omitempty"`
+	IDNotIn               []string          `json:"id_not_in,omitempty"`
+	IDLt                  *string           `json:"id_lt,omitempty"`
+	IDLte                 *string           `json:"id_lte,omitempty"`
+	IDGt                  *string           `json:"id_gt,omitempty"`
+	IDGte                 *string           `json:"id_gte,omitempty"`
+	IDContains            *string           `json:"id_contains,omitempty"`
+	IDNotContains         *string           `json:"id_not_contains,omitempty"`
+	IDStartsWith          *string           `json:"id_starts_with,omitempty"`
+	IDNotStartsWith       *string           `json:"id_not_starts_with,omitempty"`
+	IDEndsWith            *string           `json:"id_ends_with,omitempty"`
+	IDNotEndsWith         *string           `json:"id_not_ends_with,omitempty"`
+	Name                  *string           `json:"name,omitempty"`
+	NameNot               *string           `json:"name_not,omitempty"`
+	NameIn                []string          `json:"name_in,omitempty"`
+	NameNotIn             []string          `json:"name_not_in,omitempty"`
+	NameLt                *string           `json:"name_lt,omitempty"`
+	NameLte               *string           `json:"name_lte,omitempty"`
+	NameGt                *string           `json:"name_gt,omitempty"`
+	NameGte               *string           `json:"name_gte,omitempty"`
+	NameContains          *string           `json:"name_contains,omitempty"`
+	NameNotContains       *string           `json:"name_not_contains,omitempty"`
+	NameStartsWith        *string           `json:"name_starts_with,omitempty"`
+	NameNotStartsWith     *string           `json:"name_not_starts_with,omitempty"`
+	NameEndsWith          *string           `json:"name_ends_with,omitempty"`
+	NameNotEndsWith       *string           `json:"name_not_ends_with,omitempty"`
+	Email                 *string           `json:"email,omitempty"`
+	EmailNot              *string           `json:"email_not,omitempty"`
+	EmailIn               []string          `json:"email_in,omitempty"`
+	EmailNotIn            []string          `json:"email_not_in,omitempty"`
+	EmailLt               *string           `json:"email_lt,omitempty"`
+	EmailLte              *string           `json:"email_lte,omitempty"`
+	EmailGt               *string           `json:"email_gt,omitempty"`
+	EmailGte              *string           `json:"email_gte,omitempty"`
+	EmailContains         *string           `json:"email_contains,omitempty"`
+	EmailNotContains      *string           `json:"email_not_contains,omitempty"`
+	EmailStartsWith       *string           `json:"email_starts_with,omitempty"`
+	EmailNotStartsWith    *string           `json:"email_not_starts_with,omitempty"`
+	EmailEndsWith         *string           `json:"email_ends_with,omitempty"`
+	EmailNotEndsWith      *string           `json:"email_not_ends_with,omitempty"`
+	Password              *string           `json:"password,omitempty"`
+	PasswordNot           *string           `json:"password_not,omitempty"`
+	PasswordIn            []string          `json:"password_in,omitempty"`
+	PasswordNotIn         []string          `json:"password_not_in,omitempty"`
+	PasswordLt            *string           `json:"password_lt,omitempty"`
+	PasswordLte           *string           `json:"password_lte,omitempty"`
+	PasswordGt            *string           `json:"password_gt,omitempty"`
+	PasswordGte           *string           `json:"password_gte,omitempty"`
+	PasswordContains      *string           `json:"password_contains,omitempty"`
+	PasswordNotContains   *string           `json:"password_not_contains,omitempty"`
+	PasswordStartsWith    *string           `json:"password_starts_with,omitempty"`
+	PasswordNotStartsWith *string           `json:"password_not_starts_with,omitempty"`
+	PasswordEndsWith      *string           `json:"password_ends_with,omitempty"`
+	PasswordNotEndsWith   *string           `json:"password_not_ends_with,omitempty"`
+	CreatedAt             *string           `json:"createdAt,omitempty"`
+	CreatedAtNot          *string           `json:"createdAt_not,omitempty"`
+	CreatedAtIn           []string          `json:"createdAt_in,omitempty"`
+	CreatedAtNotIn        []string          `json:"createdAt_not_in,omitempty"`
+	CreatedAtLt           *string           `json:"createdAt_lt,omitempty"`
+	CreatedAtLte          *string           `json:"createdAt_lte,omitempty"`
+	CreatedAtGt           *string           `json:"createdAt_gt,omitempty"`
+	CreatedAtGte          *string           `json:"createdAt_gte,omitempty"`
+	UpdatedAt             *string           `json:"updatedAt,omitempty"`
+	UpdatedAtNot          *string           `json:"updatedAt_not,omitempty"`
+	UpdatedAtIn           []string          `json:"updatedAt_in,omitempty"`
+	UpdatedAtNotIn        []string          `json:"updatedAt_not_in,omitempty"`
+	UpdatedAtLt           *string           `json:"updatedAt_lt,omitempty"`
+	UpdatedAtLte          *string           `json:"updatedAt_lte,omitempty"`
+	UpdatedAtGt           *string           `json:"updatedAt_gt,omitempty"`
+	UpdatedAtGte          *string           `json:"updatedAt_gte,omitempty"`
+	And                   []AdminWhereInput `json:"AND,omitempty"`
+	Or                    []AdminWhereInput `json:"OR,omitempty"`
+	Not                   []AdminWhereInput `json:"NOT,omitempty"`
+}
+
+type AttendUpdateInput struct {
+	DateStartTime *string                                    `json:"dateStartTime,omitempty"`
+	StaffInfo     *StaffUpdateOneRequiredWithoutAttendsInput `json:"staffInfo,omitempty"`
+	IsAttend      *bool                                      `json:"isAttend,omitempty"`
+	InTimeIndex   *int32                                     `json:"inTimeIndex,omitempty"`
+	OutTimeIndex  *int32                                     `json:"outTimeIndex,omitempty"`
+}
+
+type StaffCreateWithoutAttendsInput struct {
+	ID               *string `json:"id,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	Age              *int32  `json:"age,omitempty"`
+	ProfileImagePath *string `json:"profileImagePath,omitempty"`
+}
+
+type StaffCreateOneWithoutAttendsInput struct {
+	Create  *StaffCreateWithoutAttendsInput `json:"create,omitempty"`
+	Connect *StaffWhereUniqueInput          `json:"connect,omitempty"`
 }
 
 type AttendCreateInput struct {
@@ -598,99 +1049,11 @@ type AttendCreateInput struct {
 	OutTimeIndex  *int32                            `json:"outTimeIndex,omitempty"`
 }
 
-type AttendUpdateManyDataInput struct {
-	DateStartTime *string `json:"dateStartTime,omitempty"`
-	IsAttend      *bool   `json:"isAttend,omitempty"`
-	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
-	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
-}
-
-type StaffCreateOneWithoutAttendsInput struct {
-	Create  *StaffCreateWithoutAttendsInput `json:"create,omitempty"`
-	Connect *StaffWhereUniqueInput          `json:"connect,omitempty"`
-}
-
-type AttendScalarWhereInput struct {
-	ID                 *string                  `json:"id,omitempty"`
-	IDNot              *string                  `json:"id_not,omitempty"`
-	IDIn               []string                 `json:"id_in,omitempty"`
-	IDNotIn            []string                 `json:"id_not_in,omitempty"`
-	IDLt               *string                  `json:"id_lt,omitempty"`
-	IDLte              *string                  `json:"id_lte,omitempty"`
-	IDGt               *string                  `json:"id_gt,omitempty"`
-	IDGte              *string                  `json:"id_gte,omitempty"`
-	IDContains         *string                  `json:"id_contains,omitempty"`
-	IDNotContains      *string                  `json:"id_not_contains,omitempty"`
-	IDStartsWith       *string                  `json:"id_starts_with,omitempty"`
-	IDNotStartsWith    *string                  `json:"id_not_starts_with,omitempty"`
-	IDEndsWith         *string                  `json:"id_ends_with,omitempty"`
-	IDNotEndsWith      *string                  `json:"id_not_ends_with,omitempty"`
-	DateStartTime      *string                  `json:"dateStartTime,omitempty"`
-	DateStartTimeNot   *string                  `json:"dateStartTime_not,omitempty"`
-	DateStartTimeIn    []string                 `json:"dateStartTime_in,omitempty"`
-	DateStartTimeNotIn []string                 `json:"dateStartTime_not_in,omitempty"`
-	DateStartTimeLt    *string                  `json:"dateStartTime_lt,omitempty"`
-	DateStartTimeLte   *string                  `json:"dateStartTime_lte,omitempty"`
-	DateStartTimeGt    *string                  `json:"dateStartTime_gt,omitempty"`
-	DateStartTimeGte   *string                  `json:"dateStartTime_gte,omitempty"`
-	IsAttend           *bool                    `json:"isAttend,omitempty"`
-	IsAttendNot        *bool                    `json:"isAttend_not,omitempty"`
-	InTimeIndex        *int32                   `json:"inTimeIndex,omitempty"`
-	InTimeIndexNot     *int32                   `json:"inTimeIndex_not,omitempty"`
-	InTimeIndexIn      []int32                  `json:"inTimeIndex_in,omitempty"`
-	InTimeIndexNotIn   []int32                  `json:"inTimeIndex_not_in,omitempty"`
-	InTimeIndexLt      *int32                   `json:"inTimeIndex_lt,omitempty"`
-	InTimeIndexLte     *int32                   `json:"inTimeIndex_lte,omitempty"`
-	InTimeIndexGt      *int32                   `json:"inTimeIndex_gt,omitempty"`
-	InTimeIndexGte     *int32                   `json:"inTimeIndex_gte,omitempty"`
-	OutTimeIndex       *int32                   `json:"outTimeIndex,omitempty"`
-	OutTimeIndexNot    *int32                   `json:"outTimeIndex_not,omitempty"`
-	OutTimeIndexIn     []int32                  `json:"outTimeIndex_in,omitempty"`
-	OutTimeIndexNotIn  []int32                  `json:"outTimeIndex_not_in,omitempty"`
-	OutTimeIndexLt     *int32                   `json:"outTimeIndex_lt,omitempty"`
-	OutTimeIndexLte    *int32                   `json:"outTimeIndex_lte,omitempty"`
-	OutTimeIndexGt     *int32                   `json:"outTimeIndex_gt,omitempty"`
-	OutTimeIndexGte    *int32                   `json:"outTimeIndex_gte,omitempty"`
-	CreatedAt          *string                  `json:"createdAt,omitempty"`
-	CreatedAtNot       *string                  `json:"createdAt_not,omitempty"`
-	CreatedAtIn        []string                 `json:"createdAt_in,omitempty"`
-	CreatedAtNotIn     []string                 `json:"createdAt_not_in,omitempty"`
-	CreatedAtLt        *string                  `json:"createdAt_lt,omitempty"`
-	CreatedAtLte       *string                  `json:"createdAt_lte,omitempty"`
-	CreatedAtGt        *string                  `json:"createdAt_gt,omitempty"`
-	CreatedAtGte       *string                  `json:"createdAt_gte,omitempty"`
-	UpdatedAt          *string                  `json:"updatedAt,omitempty"`
-	UpdatedAtNot       *string                  `json:"updatedAt_not,omitempty"`
-	UpdatedAtIn        []string                 `json:"updatedAt_in,omitempty"`
-	UpdatedAtNotIn     []string                 `json:"updatedAt_not_in,omitempty"`
-	UpdatedAtLt        *string                  `json:"updatedAt_lt,omitempty"`
-	UpdatedAtLte       *string                  `json:"updatedAt_lte,omitempty"`
-	UpdatedAtGt        *string                  `json:"updatedAt_gt,omitempty"`
-	UpdatedAtGte       *string                  `json:"updatedAt_gte,omitempty"`
-	And                []AttendScalarWhereInput `json:"AND,omitempty"`
-	Or                 []AttendScalarWhereInput `json:"OR,omitempty"`
-	Not                []AttendScalarWhereInput `json:"NOT,omitempty"`
-}
-
-type StaffCreateWithoutAttendsInput struct {
-	ID               *string `json:"id,omitempty"`
-	Name             *string `json:"name,omitempty"`
-	Age              *int32  `json:"age,omitempty"`
-	ProfileImagePath *string `json:"profileImagePath,omitempty"`
-}
-
-type AttendUpsertWithWhereUniqueWithoutStaffInfoInput struct {
-	Where  AttendWhereUniqueInput                `json:"where"`
-	Update AttendUpdateWithoutStaffInfoDataInput `json:"update"`
-	Create AttendCreateWithoutStaffInfoInput     `json:"create"`
-}
-
-type AttendUpdateInput struct {
-	DateStartTime *string                                    `json:"dateStartTime,omitempty"`
-	StaffInfo     *StaffUpdateOneRequiredWithoutAttendsInput `json:"staffInfo,omitempty"`
-	IsAttend      *bool                                      `json:"isAttend,omitempty"`
-	InTimeIndex   *int32                                     `json:"inTimeIndex,omitempty"`
-	OutTimeIndex  *int32                                     `json:"outTimeIndex,omitempty"`
+type StaffUpdateInput struct {
+	Name             *string                                `json:"name,omitempty"`
+	Age              *int32                                 `json:"age,omitempty"`
+	Attends          *AttendUpdateManyWithoutStaffInfoInput `json:"attends,omitempty"`
+	ProfileImagePath *string                                `json:"profileImagePath,omitempty"`
 }
 
 type AttendWhereInput struct {
@@ -756,11 +1119,10 @@ type AttendWhereInput struct {
 	Not                []AttendWhereInput `json:"NOT,omitempty"`
 }
 
-type StaffUpdateInput struct {
-	Name             *string                                `json:"name,omitempty"`
-	Age              *int32                                 `json:"age,omitempty"`
-	Attends          *AttendUpdateManyWithoutStaffInfoInput `json:"attends,omitempty"`
-	ProfileImagePath *string                                `json:"profileImagePath,omitempty"`
+type AttendUpsertWithWhereUniqueWithoutStaffInfoInput struct {
+	Where  AttendWhereUniqueInput                `json:"where"`
+	Update AttendUpdateWithoutStaffInfoDataInput `json:"update"`
+	Create AttendCreateWithoutStaffInfoInput     `json:"create"`
 }
 
 type StaffUpdateManyMutationInput struct {
@@ -769,57 +1131,93 @@ type StaffUpdateManyMutationInput struct {
 	ProfileImagePath *string `json:"profileImagePath,omitempty"`
 }
 
-type AttendCreateManyWithoutStaffInfoInput struct {
-	Create  []AttendCreateWithoutStaffInfoInput `json:"create,omitempty"`
-	Connect []AttendWhereUniqueInput            `json:"connect,omitempty"`
+type AdminExec struct {
+	exec *prisma.Exec
 }
 
-type AttendUpdateManyMutationInput struct {
-	DateStartTime *string `json:"dateStartTime,omitempty"`
-	IsAttend      *bool   `json:"isAttend,omitempty"`
-	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
-	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
+func (instance AdminExec) Exec(ctx context.Context) (*Admin, error) {
+	var v Admin
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
 }
 
-type AttendCreateWithoutStaffInfoInput struct {
-	ID            *string `json:"id,omitempty"`
-	DateStartTime string  `json:"dateStartTime"`
-	IsAttend      *bool   `json:"isAttend,omitempty"`
-	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
-	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
+func (instance AdminExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
 }
 
-type StaffUpdateWithoutAttendsDataInput struct {
-	Name             *string `json:"name,omitempty"`
-	Age              *int32  `json:"age,omitempty"`
-	ProfileImagePath *string `json:"profileImagePath,omitempty"`
+type AdminExecArray struct {
+	exec *prisma.Exec
 }
 
-type AttendUpdateManyWithWhereNestedInput struct {
-	Where AttendScalarWhereInput    `json:"where"`
-	Data  AttendUpdateManyDataInput `json:"data"`
+func (instance AdminExecArray) Exec(ctx context.Context) ([]Admin, error) {
+	var v []Admin
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
 }
 
-type StaffSubscriptionWhereInput struct {
-	MutationIn                 []MutationType                `json:"mutation_in,omitempty"`
-	UpdatedFieldsContains      *string                       `json:"updatedFields_contains,omitempty"`
-	UpdatedFieldsContainsEvery []string                      `json:"updatedFields_contains_every,omitempty"`
-	UpdatedFieldsContainsSome  []string                      `json:"updatedFields_contains_some,omitempty"`
-	Node                       *StaffWhereInput              `json:"node,omitempty"`
-	And                        []StaffSubscriptionWhereInput `json:"AND,omitempty"`
-	Or                         []StaffSubscriptionWhereInput `json:"OR,omitempty"`
-	Not                        []StaffSubscriptionWhereInput `json:"NOT,omitempty"`
+var AdminFields = []string{"id", "name", "email", "password", "createdAt", "updatedAt"}
+
+type Admin struct {
+	ID        string  `json:"id"`
+	Name      *string `json:"name,omitempty"`
+	Email     string  `json:"email"`
+	Password  string  `json:"password"`
+	CreatedAt string  `json:"createdAt"`
+	UpdatedAt string  `json:"updatedAt"`
 }
 
-type AttendUpdateWithoutStaffInfoDataInput struct {
-	DateStartTime *string `json:"dateStartTime,omitempty"`
-	IsAttend      *bool   `json:"isAttend,omitempty"`
-	InTimeIndex   *int32  `json:"inTimeIndex,omitempty"`
-	OutTimeIndex  *int32  `json:"outTimeIndex,omitempty"`
+type AdminEdgeExec struct {
+	exec *prisma.Exec
 }
 
-type StaffWhereUniqueInput struct {
-	ID *string `json:"id,omitempty"`
+func (instance *AdminEdgeExec) Node() *AdminExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "Admin"},
+		"node",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExec{ret}
+}
+
+func (instance AdminEdgeExec) Exec(ctx context.Context) (*AdminEdge, error) {
+	var v AdminEdge
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
+}
+
+func (instance AdminEdgeExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type AdminEdgeExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance AdminEdgeExecArray) Exec(ctx context.Context) ([]AdminEdge, error) {
+	var v []AdminEdge
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var AdminEdgeFields = []string{"cursor"}
+
+type AdminEdge struct {
+	Node   Admin  `json:"node"`
+	Cursor string `json:"cursor"`
 }
 
 type StaffPreviousValuesExec struct {
@@ -861,6 +1259,475 @@ type StaffPreviousValues struct {
 	ProfileImagePath *string `json:"profileImagePath,omitempty"`
 	CreatedAt        string  `json:"createdAt"`
 	UpdatedAt        string  `json:"updatedAt"`
+}
+
+type StaffSubscriptionPayloadExec struct {
+	exec *prisma.Exec
+}
+
+func (instance *StaffSubscriptionPayloadExec) Node() *StaffExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "Staff"},
+		"node",
+		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
+
+	return &StaffExec{ret}
+}
+
+func (instance *StaffSubscriptionPayloadExec) PreviousValues() *StaffPreviousValuesExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "StaffPreviousValues"},
+		"previousValues",
+		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
+
+	return &StaffPreviousValuesExec{ret}
+}
+
+func (instance StaffSubscriptionPayloadExec) Exec(ctx context.Context) (*StaffSubscriptionPayload, error) {
+	var v StaffSubscriptionPayload
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
+}
+
+func (instance StaffSubscriptionPayloadExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type StaffSubscriptionPayloadExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance StaffSubscriptionPayloadExecArray) Exec(ctx context.Context) ([]StaffSubscriptionPayload, error) {
+	var v []StaffSubscriptionPayload
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var StaffSubscriptionPayloadFields = []string{"mutation", "updatedFields"}
+
+type StaffSubscriptionPayload struct {
+	Mutation      MutationType `json:"mutation"`
+	Node          *Staff       `json:"node,omitempty"`
+	UpdatedFields []string     `json:"updatedFields,omitempty"`
+}
+
+type StaffEdgeExec struct {
+	exec *prisma.Exec
+}
+
+func (instance *StaffEdgeExec) Node() *StaffExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "Staff"},
+		"node",
+		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
+
+	return &StaffExec{ret}
+}
+
+func (instance StaffEdgeExec) Exec(ctx context.Context) (*StaffEdge, error) {
+	var v StaffEdge
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
+}
+
+func (instance StaffEdgeExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type StaffEdgeExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance StaffEdgeExecArray) Exec(ctx context.Context) ([]StaffEdge, error) {
+	var v []StaffEdge
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var StaffEdgeFields = []string{"cursor"}
+
+type StaffEdge struct {
+	Node   Staff  `json:"node"`
+	Cursor string `json:"cursor"`
+}
+
+type PageInfoExec struct {
+	exec *prisma.Exec
+}
+
+func (instance PageInfoExec) Exec(ctx context.Context) (*PageInfo, error) {
+	var v PageInfo
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
+}
+
+func (instance PageInfoExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type PageInfoExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance PageInfoExecArray) Exec(ctx context.Context) ([]PageInfo, error) {
+	var v []PageInfo
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var PageInfoFields = []string{"hasNextPage", "hasPreviousPage", "startCursor", "endCursor"}
+
+type PageInfo struct {
+	HasNextPage     bool    `json:"hasNextPage"`
+	HasPreviousPage bool    `json:"hasPreviousPage"`
+	StartCursor     *string `json:"startCursor,omitempty"`
+	EndCursor       *string `json:"endCursor,omitempty"`
+}
+
+type AdminConnectionExec struct {
+	exec *prisma.Exec
+}
+
+func (instance *AdminConnectionExec) PageInfo() *PageInfoExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "PageInfo"},
+		"pageInfo",
+		[]string{"hasNextPage", "hasPreviousPage", "startCursor", "endCursor"})
+
+	return &PageInfoExec{ret}
+}
+
+func (instance *AdminConnectionExec) Edges() *AdminEdgeExecArray {
+	edges := instance.exec.Client.GetMany(
+		instance.exec,
+		nil,
+		[3]string{"AdminWhereInput", "AdminOrderByInput", "AdminEdge"},
+		"edges",
+		[]string{"cursor"})
+
+	nodes := edges.Client.GetOne(
+		edges,
+		nil,
+		[2]string{"", "Admin"},
+		"node",
+		AdminFields)
+
+	return &AdminEdgeExecArray{nodes}
+}
+
+func (instance *AdminConnectionExec) Aggregate(ctx context.Context) (*Aggregate, error) {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "AggregateAdmin"},
+		"aggregate",
+		[]string{"count"})
+
+	var v Aggregate
+	_, err := ret.Exec(ctx, &v)
+	return &v, err
+}
+
+func (instance AdminConnectionExec) Exec(ctx context.Context) (*AdminConnection, error) {
+	edges, err := instance.Edges().Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pageInfo, err := instance.PageInfo().Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AdminConnection{
+		Edges:    edges,
+		PageInfo: *pageInfo,
+	}, nil
+}
+
+func (instance AdminConnectionExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type AdminConnectionExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance AdminConnectionExecArray) Exec(ctx context.Context) ([]AdminConnection, error) {
+	var v []AdminConnection
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var AdminConnectionFields = []string{}
+
+type AdminConnection struct {
+	PageInfo PageInfo    `json:"pageInfo"`
+	Edges    []AdminEdge `json:"edges"`
+}
+
+type AttendConnectionExec struct {
+	exec *prisma.Exec
+}
+
+func (instance *AttendConnectionExec) PageInfo() *PageInfoExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "PageInfo"},
+		"pageInfo",
+		[]string{"hasNextPage", "hasPreviousPage", "startCursor", "endCursor"})
+
+	return &PageInfoExec{ret}
+}
+
+func (instance *AttendConnectionExec) Edges() *AttendEdgeExecArray {
+	edges := instance.exec.Client.GetMany(
+		instance.exec,
+		nil,
+		[3]string{"AttendWhereInput", "AttendOrderByInput", "AttendEdge"},
+		"edges",
+		[]string{"cursor"})
+
+	nodes := edges.Client.GetOne(
+		edges,
+		nil,
+		[2]string{"", "Attend"},
+		"node",
+		AttendFields)
+
+	return &AttendEdgeExecArray{nodes}
+}
+
+func (instance *AttendConnectionExec) Aggregate(ctx context.Context) (*Aggregate, error) {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "AggregateAttend"},
+		"aggregate",
+		[]string{"count"})
+
+	var v Aggregate
+	_, err := ret.Exec(ctx, &v)
+	return &v, err
+}
+
+func (instance AttendConnectionExec) Exec(ctx context.Context) (*AttendConnection, error) {
+	edges, err := instance.Edges().Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pageInfo, err := instance.PageInfo().Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AttendConnection{
+		Edges:    edges,
+		PageInfo: *pageInfo,
+	}, nil
+}
+
+func (instance AttendConnectionExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type AttendConnectionExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance AttendConnectionExecArray) Exec(ctx context.Context) ([]AttendConnection, error) {
+	var v []AttendConnection
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var AttendConnectionFields = []string{}
+
+type AttendConnection struct {
+	PageInfo PageInfo     `json:"pageInfo"`
+	Edges    []AttendEdge `json:"edges"`
+}
+
+type AttendExec struct {
+	exec *prisma.Exec
+}
+
+func (instance *AttendExec) StaffInfo() *StaffExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "Staff"},
+		"staffInfo",
+		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
+
+	return &StaffExec{ret}
+}
+
+func (instance AttendExec) Exec(ctx context.Context) (*Attend, error) {
+	var v Attend
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
+}
+
+func (instance AttendExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type AttendExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance AttendExecArray) Exec(ctx context.Context) ([]Attend, error) {
+	var v []Attend
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var AttendFields = []string{"id", "dateStartTime", "isAttend", "inTimeIndex", "outTimeIndex", "createdAt", "updatedAt"}
+
+type Attend struct {
+	ID            string `json:"id"`
+	DateStartTime string `json:"dateStartTime"`
+	IsAttend      bool   `json:"isAttend"`
+	InTimeIndex   int32  `json:"inTimeIndex"`
+	OutTimeIndex  int32  `json:"outTimeIndex"`
+	CreatedAt     string `json:"createdAt"`
+	UpdatedAt     string `json:"updatedAt"`
+}
+
+type AdminPreviousValuesExec struct {
+	exec *prisma.Exec
+}
+
+func (instance AdminPreviousValuesExec) Exec(ctx context.Context) (*AdminPreviousValues, error) {
+	var v AdminPreviousValues
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
+}
+
+func (instance AdminPreviousValuesExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type AdminPreviousValuesExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance AdminPreviousValuesExecArray) Exec(ctx context.Context) ([]AdminPreviousValues, error) {
+	var v []AdminPreviousValues
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var AdminPreviousValuesFields = []string{"id", "name", "email", "password", "createdAt", "updatedAt"}
+
+type AdminPreviousValues struct {
+	ID        string  `json:"id"`
+	Name      *string `json:"name,omitempty"`
+	Email     string  `json:"email"`
+	Password  string  `json:"password"`
+	CreatedAt string  `json:"createdAt"`
+	UpdatedAt string  `json:"updatedAt"`
+}
+
+type AdminSubscriptionPayloadExec struct {
+	exec *prisma.Exec
+}
+
+func (instance *AdminSubscriptionPayloadExec) Node() *AdminExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "Admin"},
+		"node",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminExec{ret}
+}
+
+func (instance *AdminSubscriptionPayloadExec) PreviousValues() *AdminPreviousValuesExec {
+	ret := instance.exec.Client.GetOne(
+		instance.exec,
+		nil,
+		[2]string{"", "AdminPreviousValues"},
+		"previousValues",
+		[]string{"id", "name", "email", "password", "createdAt", "updatedAt"})
+
+	return &AdminPreviousValuesExec{ret}
+}
+
+func (instance AdminSubscriptionPayloadExec) Exec(ctx context.Context) (*AdminSubscriptionPayload, error) {
+	var v AdminSubscriptionPayload
+	ok, err := instance.exec.Exec(ctx, &v)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoResult
+	}
+	return &v, nil
+}
+
+func (instance AdminSubscriptionPayloadExec) Exists(ctx context.Context) (bool, error) {
+	return instance.exec.Exists(ctx)
+}
+
+type AdminSubscriptionPayloadExecArray struct {
+	exec *prisma.Exec
+}
+
+func (instance AdminSubscriptionPayloadExecArray) Exec(ctx context.Context) ([]AdminSubscriptionPayload, error) {
+	var v []AdminSubscriptionPayload
+	err := instance.exec.ExecArray(ctx, &v)
+	return v, err
+}
+
+var AdminSubscriptionPayloadFields = []string{"mutation", "updatedFields"}
+
+type AdminSubscriptionPayload struct {
+	Mutation      MutationType `json:"mutation"`
+	Node          *Admin       `json:"node,omitempty"`
+	UpdatedFields []string     `json:"updatedFields,omitempty"`
 }
 
 type AttendSubscriptionPayloadExec struct {
@@ -921,107 +1788,6 @@ type AttendSubscriptionPayload struct {
 	Mutation      MutationType `json:"mutation"`
 	Node          *Attend      `json:"node,omitempty"`
 	UpdatedFields []string     `json:"updatedFields,omitempty"`
-}
-
-type AttendExec struct {
-	exec *prisma.Exec
-}
-
-func (instance *AttendExec) StaffInfo() *StaffExec {
-	ret := instance.exec.Client.GetOne(
-		instance.exec,
-		nil,
-		[2]string{"", "Staff"},
-		"staffInfo",
-		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
-
-	return &StaffExec{ret}
-}
-
-func (instance AttendExec) Exec(ctx context.Context) (*Attend, error) {
-	var v Attend
-	ok, err := instance.exec.Exec(ctx, &v)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, ErrNoResult
-	}
-	return &v, nil
-}
-
-func (instance AttendExec) Exists(ctx context.Context) (bool, error) {
-	return instance.exec.Exists(ctx)
-}
-
-type AttendExecArray struct {
-	exec *prisma.Exec
-}
-
-func (instance AttendExecArray) Exec(ctx context.Context) ([]Attend, error) {
-	var v []Attend
-	err := instance.exec.ExecArray(ctx, &v)
-	return v, err
-}
-
-var AttendFields = []string{"id", "dateStartTime", "isAttend", "inTimeIndex", "outTimeIndex", "createdAt", "updatedAt"}
-
-type Attend struct {
-	ID            string `json:"id"`
-	DateStartTime string `json:"dateStartTime"`
-	IsAttend      bool   `json:"isAttend"`
-	InTimeIndex   int32  `json:"inTimeIndex"`
-	OutTimeIndex  int32  `json:"outTimeIndex"`
-	CreatedAt     string `json:"createdAt"`
-	UpdatedAt     string `json:"updatedAt"`
-}
-
-type AttendEdgeExec struct {
-	exec *prisma.Exec
-}
-
-func (instance *AttendEdgeExec) Node() *AttendExec {
-	ret := instance.exec.Client.GetOne(
-		instance.exec,
-		nil,
-		[2]string{"", "Attend"},
-		"node",
-		[]string{"id", "dateStartTime", "isAttend", "inTimeIndex", "outTimeIndex", "createdAt", "updatedAt"})
-
-	return &AttendExec{ret}
-}
-
-func (instance AttendEdgeExec) Exec(ctx context.Context) (*AttendEdge, error) {
-	var v AttendEdge
-	ok, err := instance.exec.Exec(ctx, &v)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, ErrNoResult
-	}
-	return &v, nil
-}
-
-func (instance AttendEdgeExec) Exists(ctx context.Context) (bool, error) {
-	return instance.exec.Exists(ctx)
-}
-
-type AttendEdgeExecArray struct {
-	exec *prisma.Exec
-}
-
-func (instance AttendEdgeExecArray) Exec(ctx context.Context) ([]AttendEdge, error) {
-	var v []AttendEdge
-	err := instance.exec.ExecArray(ctx, &v)
-	return v, err
-}
-
-var AttendEdgeFields = []string{"cursor"}
-
-type AttendEdge struct {
-	Node   Attend `json:"node"`
-	Cursor string `json:"cursor"`
 }
 
 type AttendPreviousValuesExec struct {
@@ -1141,96 +1907,23 @@ type Staff struct {
 	UpdatedAt        string  `json:"updatedAt"`
 }
 
-type AttendConnectionExec struct {
+type AttendEdgeExec struct {
 	exec *prisma.Exec
 }
 
-func (instance *AttendConnectionExec) PageInfo() *PageInfoExec {
+func (instance *AttendEdgeExec) Node() *AttendExec {
 	ret := instance.exec.Client.GetOne(
 		instance.exec,
-		nil,
-		[2]string{"", "PageInfo"},
-		"pageInfo",
-		[]string{"hasNextPage", "hasPreviousPage", "startCursor", "endCursor"})
-
-	return &PageInfoExec{ret}
-}
-
-func (instance *AttendConnectionExec) Edges() *AttendEdgeExecArray {
-	edges := instance.exec.Client.GetMany(
-		instance.exec,
-		nil,
-		[3]string{"AttendWhereInput", "AttendOrderByInput", "AttendEdge"},
-		"edges",
-		[]string{"cursor"})
-
-	nodes := edges.Client.GetOne(
-		edges,
 		nil,
 		[2]string{"", "Attend"},
 		"node",
-		AttendFields)
+		[]string{"id", "dateStartTime", "isAttend", "inTimeIndex", "outTimeIndex", "createdAt", "updatedAt"})
 
-	return &AttendEdgeExecArray{nodes}
+	return &AttendExec{ret}
 }
 
-func (instance *AttendConnectionExec) Aggregate(ctx context.Context) (*Aggregate, error) {
-	ret := instance.exec.Client.GetOne(
-		instance.exec,
-		nil,
-		[2]string{"", "AggregateAttend"},
-		"aggregate",
-		[]string{"count"})
-
-	var v Aggregate
-	_, err := ret.Exec(ctx, &v)
-	return &v, err
-}
-
-func (instance AttendConnectionExec) Exec(ctx context.Context) (*AttendConnection, error) {
-	edges, err := instance.Edges().Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	pageInfo, err := instance.PageInfo().Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &AttendConnection{
-		Edges:    edges,
-		PageInfo: *pageInfo,
-	}, nil
-}
-
-func (instance AttendConnectionExec) Exists(ctx context.Context) (bool, error) {
-	return instance.exec.Exists(ctx)
-}
-
-type AttendConnectionExecArray struct {
-	exec *prisma.Exec
-}
-
-func (instance AttendConnectionExecArray) Exec(ctx context.Context) ([]AttendConnection, error) {
-	var v []AttendConnection
-	err := instance.exec.ExecArray(ctx, &v)
-	return v, err
-}
-
-var AttendConnectionFields = []string{}
-
-type AttendConnection struct {
-	PageInfo PageInfo     `json:"pageInfo"`
-	Edges    []AttendEdge `json:"edges"`
-}
-
-type PageInfoExec struct {
-	exec *prisma.Exec
-}
-
-func (instance PageInfoExec) Exec(ctx context.Context) (*PageInfo, error) {
-	var v PageInfo
+func (instance AttendEdgeExec) Exec(ctx context.Context) (*AttendEdge, error) {
+	var v AttendEdge
 	ok, err := instance.exec.Exec(ctx, &v)
 	if err != nil {
 		return nil, err
@@ -1241,87 +1934,25 @@ func (instance PageInfoExec) Exec(ctx context.Context) (*PageInfo, error) {
 	return &v, nil
 }
 
-func (instance PageInfoExec) Exists(ctx context.Context) (bool, error) {
+func (instance AttendEdgeExec) Exists(ctx context.Context) (bool, error) {
 	return instance.exec.Exists(ctx)
 }
 
-type PageInfoExecArray struct {
+type AttendEdgeExecArray struct {
 	exec *prisma.Exec
 }
 
-func (instance PageInfoExecArray) Exec(ctx context.Context) ([]PageInfo, error) {
-	var v []PageInfo
+func (instance AttendEdgeExecArray) Exec(ctx context.Context) ([]AttendEdge, error) {
+	var v []AttendEdge
 	err := instance.exec.ExecArray(ctx, &v)
 	return v, err
 }
 
-var PageInfoFields = []string{"hasNextPage", "hasPreviousPage", "startCursor", "endCursor"}
+var AttendEdgeFields = []string{"cursor"}
 
-type PageInfo struct {
-	HasNextPage     bool    `json:"hasNextPage"`
-	HasPreviousPage bool    `json:"hasPreviousPage"`
-	StartCursor     *string `json:"startCursor,omitempty"`
-	EndCursor       *string `json:"endCursor,omitempty"`
-}
-
-type StaffSubscriptionPayloadExec struct {
-	exec *prisma.Exec
-}
-
-func (instance *StaffSubscriptionPayloadExec) Node() *StaffExec {
-	ret := instance.exec.Client.GetOne(
-		instance.exec,
-		nil,
-		[2]string{"", "Staff"},
-		"node",
-		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
-
-	return &StaffExec{ret}
-}
-
-func (instance *StaffSubscriptionPayloadExec) PreviousValues() *StaffPreviousValuesExec {
-	ret := instance.exec.Client.GetOne(
-		instance.exec,
-		nil,
-		[2]string{"", "StaffPreviousValues"},
-		"previousValues",
-		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
-
-	return &StaffPreviousValuesExec{ret}
-}
-
-func (instance StaffSubscriptionPayloadExec) Exec(ctx context.Context) (*StaffSubscriptionPayload, error) {
-	var v StaffSubscriptionPayload
-	ok, err := instance.exec.Exec(ctx, &v)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, ErrNoResult
-	}
-	return &v, nil
-}
-
-func (instance StaffSubscriptionPayloadExec) Exists(ctx context.Context) (bool, error) {
-	return instance.exec.Exists(ctx)
-}
-
-type StaffSubscriptionPayloadExecArray struct {
-	exec *prisma.Exec
-}
-
-func (instance StaffSubscriptionPayloadExecArray) Exec(ctx context.Context) ([]StaffSubscriptionPayload, error) {
-	var v []StaffSubscriptionPayload
-	err := instance.exec.ExecArray(ctx, &v)
-	return v, err
-}
-
-var StaffSubscriptionPayloadFields = []string{"mutation", "updatedFields"}
-
-type StaffSubscriptionPayload struct {
-	Mutation      MutationType `json:"mutation"`
-	Node          *Staff       `json:"node,omitempty"`
-	UpdatedFields []string     `json:"updatedFields,omitempty"`
+type AttendEdge struct {
+	Node   Attend `json:"node"`
+	Cursor string `json:"cursor"`
 }
 
 type StaffConnectionExec struct {
@@ -1406,52 +2037,4 @@ var StaffConnectionFields = []string{}
 type StaffConnection struct {
 	PageInfo PageInfo    `json:"pageInfo"`
 	Edges    []StaffEdge `json:"edges"`
-}
-
-type StaffEdgeExec struct {
-	exec *prisma.Exec
-}
-
-func (instance *StaffEdgeExec) Node() *StaffExec {
-	ret := instance.exec.Client.GetOne(
-		instance.exec,
-		nil,
-		[2]string{"", "Staff"},
-		"node",
-		[]string{"id", "name", "age", "profileImagePath", "createdAt", "updatedAt"})
-
-	return &StaffExec{ret}
-}
-
-func (instance StaffEdgeExec) Exec(ctx context.Context) (*StaffEdge, error) {
-	var v StaffEdge
-	ok, err := instance.exec.Exec(ctx, &v)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, ErrNoResult
-	}
-	return &v, nil
-}
-
-func (instance StaffEdgeExec) Exists(ctx context.Context) (bool, error) {
-	return instance.exec.Exists(ctx)
-}
-
-type StaffEdgeExecArray struct {
-	exec *prisma.Exec
-}
-
-func (instance StaffEdgeExecArray) Exec(ctx context.Context) ([]StaffEdge, error) {
-	var v []StaffEdge
-	err := instance.exec.ExecArray(ctx, &v)
-	return v, err
-}
-
-var StaffEdgeFields = []string{"cursor"}
-
-type StaffEdge struct {
-	Node   Staff  `json:"node"`
-	Cursor string `json:"cursor"`
 }

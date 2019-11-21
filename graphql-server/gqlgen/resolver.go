@@ -4,12 +4,16 @@ import (
 	"context"
 	"demo13/prisma"
 	"demo13/servants/AttendsDefaultDataManager"
+	"demo13/servants/AuthExaminer"
+	"github.com/hako/branca"
+	"github.com/joho/godotenv"
+	"os"
 	// "log"
 )
 
 // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
-type Resolver struct{
+type Resolver struct {
 	Prisma *prisma.Client
 }
 
@@ -37,11 +41,11 @@ func (r *attendResolver) StaffInfo(ctx context.Context, obj *prisma.Attend) (*pr
 
 type mutationResolver struct{ *Resolver }
 
-func (r *mutationResolver) CreateStaff(ctx context.Context, name string, age int, profileImagePath *string) (*prisma.Staff, error) {
+func (r *mutationResolver) CreateStaff(ctx context.Context, authToken string, name string, age int, profileImagePath *string) (*prisma.Staff, error) {
 	addm := AttendsDefaultDataManager.Summon()
 	staff, err := r.Prisma.CreateStaff(prisma.StaffCreateInput{
 		Name:             &name,
-		Age:             prisma.Int32(int32(age)),
+		Age:              prisma.Int32(int32(age)),
 		ProfileImagePath: profileImagePath,
 		Attends: &prisma.AttendCreateManyWithoutStaffInfoInput{
 			Create: addm.ServeData(),
@@ -50,60 +54,89 @@ func (r *mutationResolver) CreateStaff(ctx context.Context, name string, age int
 
 	return staff, err
 }
-func (r *mutationResolver) UpdateStaffProfile(ctx context.Context, id string, name *string, age *int, profileImagePath *string) (*prisma.Staff, error) {
-	staff, _ := r.Prisma.Staff(prisma.StaffWhereUniqueInput{ ID: &id }).Exec(ctx)
+func (r *mutationResolver) UpdateStaffProfile(ctx context.Context, authToken string, id string, name *string, age *int, profileImagePath *string) (*prisma.Staff, error) {
+	staff, _ := r.Prisma.Staff(prisma.StaffWhereUniqueInput{ID: &id}).Exec(ctx)
 
-	if name == nil { name = staff.Name }
-	if age == nil { a := *staff.Age; a2 := int(a); age = &a2 }
-	if profileImagePath == nil { profileImagePath = staff.ProfileImagePath }
-	
+	if name == nil {
+		name = staff.Name
+	}
+	if age == nil {
+		a := *staff.Age
+		a2 := int(a)
+		age = &a2
+	}
+	if profileImagePath == nil {
+		profileImagePath = staff.ProfileImagePath
+	}
+
 	re, err := r.Prisma.UpdateStaff(prisma.StaffUpdateParams{
-		Where: prisma.StaffWhereUniqueInput{ ID: &id },
+		Where: prisma.StaffWhereUniqueInput{ID: &id},
 		Data: prisma.StaffUpdateInput{
-			Name: name,
-			Age: prisma.Int32(int32(*age)),
+			Name:             name,
+			Age:              prisma.Int32(int32(*age)),
 			ProfileImagePath: profileImagePath,
 		},
 	}).Exec(ctx)
 	return re, err
 }
-func (r *mutationResolver) UpdateStaffAttend(ctx context.Context, staffID string, attendID string, input UpdateStaffAttendInput) (*prisma.Attend, error) {
-	attend, _ := r.Prisma.Attend(prisma.AttendWhereUniqueInput{ ID: &attendID }).Exec(ctx)
+func (r *mutationResolver) UpdateStaffAttend(ctx context.Context, authToken string, staffID string, attendID string, input UpdateStaffAttendInput) (*prisma.Attend, error) {
+	attend, _ := r.Prisma.Attend(prisma.AttendWhereUniqueInput{ID: &attendID}).Exec(ctx)
 
-	if input.IsAttend == nil { input.IsAttend = &attend.IsAttend }
-	if input.InTimeIndex == nil { i := attend.InTimeIndex; i2 := int(i); input.InTimeIndex = &i2 }
-	if input.OutTimeIndex == nil { o := attend.OutTimeIndex; o2 := int(o); input.OutTimeIndex = &o2 }
-	
+	if input.IsAttend == nil {
+		input.IsAttend = &attend.IsAttend
+	}
+	if input.InTimeIndex == nil {
+		i := attend.InTimeIndex
+		i2 := int(i)
+		input.InTimeIndex = &i2
+	}
+	if input.OutTimeIndex == nil {
+		o := attend.OutTimeIndex
+		o2 := int(o)
+		input.OutTimeIndex = &o2
+	}
+
 	_, err := r.Prisma.UpdateManyAttends(prisma.AttendUpdateManyParams{
 		Where: &prisma.AttendWhereInput{
 			And: []prisma.AttendWhereInput{
-				prisma.AttendWhereInput{ ID: &attendID },
+				prisma.AttendWhereInput{ID: &attendID},
 				prisma.AttendWhereInput{
-					StaffInfo: &prisma.StaffWhereInput{ ID: &staffID },
+					StaffInfo: &prisma.StaffWhereInput{ID: &staffID},
 				},
 			},
 		},
 		Data: prisma.AttendUpdateManyMutationInput{
-			IsAttend: input.IsAttend,
-			InTimeIndex: prisma.Int32(int32(*input.InTimeIndex)),
+			IsAttend:     input.IsAttend,
+			InTimeIndex:  prisma.Int32(int32(*input.InTimeIndex)),
 			OutTimeIndex: prisma.Int32(int32(*input.OutTimeIndex)),
 		},
 	}).Exec(ctx)
 
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 
-	re, _ := r.Prisma.Attend(prisma.AttendWhereUniqueInput{ ID: &attendID }).Exec(ctx)
+	re, _ := r.Prisma.Attend(prisma.AttendWhereUniqueInput{ID: &attendID}).Exec(ctx)
 
 	return re, err
 }
-func (r *mutationResolver) DeleteStaff(ctx context.Context, id string) (*prisma.Staff, error) {
-	staff, err := r.Prisma.DeleteStaff(prisma.StaffWhereUniqueInput{
-		ID: &id,
-	}).Exec(ctx)
+func (r *mutationResolver) DeleteStaff(ctx context.Context, authToken string, id string) (*prisma.Staff, error) {
 
-	return staff, err
+	ax := AuthExaminer.Summon(authToken)
+
+	_, err := ax.ServeAuthResult()
+
+	if err != nil {
+		panic(err)
+	}
+	// staff, err := r.Prisma.DeleteStaff(prisma.StaffWhereUniqueInput{
+	// 	ID: &id,
+	// }).Exec(ctx)
+
+	// return staff, err
+	panic("実装中")
 }
-func (r *mutationResolver) CronUpdateAttend(ctx context.Context, apiKey string) (*prisma.Attend, error) {
+func (r *mutationResolver) CronUpdateAttend(ctx context.Context, authToken string) (*prisma.Attend, error) {
 	panic("not implemented")
 }
 
@@ -159,4 +192,33 @@ func (r *staffResolver) Attends(ctx context.Context, obj *prisma.Staff) ([]*pris
 	}
 
 	return re, err
+}
+
+func (r *queryResolver) GetAuthToken(ctx context.Context, email string, password string) (string, error) {
+
+	authorizedUsers, err := r.Prisma.Admins(&prisma.AdminsParams{
+		Where: &prisma.AdminWhereInput{
+			Email:    &email,
+			Password: &password,
+		},
+	}).Exec(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// only development
+	err2 := godotenv.Load()
+	if err2 != nil {
+		panic(err2)
+	}
+
+	b := branca.NewBranca(os.Getenv("SECRET_KEY"))
+	token, err := b.EncodeToString(authorizedUsers[0].Email + "/" + authorizedUsers[0].Password)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return token, err
 }

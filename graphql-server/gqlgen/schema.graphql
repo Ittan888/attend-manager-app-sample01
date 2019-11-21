@@ -2,18 +2,21 @@ type Query {
   staffs: [Staff!]!
   staff(id: ID!): Staff!
   attend(staffId: ID! attendId: ID!): Attend!
+  getAuthToken(email: String! password: String!): String!
 }
 
 type Mutation {
 
   # staff mutation
   createStaff(
+    authToken: String!
     name: String!
     age: Int!
     profileImagePath: String
   ): Staff!
 
   updateStaffProfile(
+    authToken: String!
     id: ID!
     name: String
     age: Int
@@ -21,18 +24,20 @@ type Mutation {
   ): Staff!
 
   updateStaffAttend(
+    authToken: String!
     staffId: ID!
     attendId: ID! 
     input: updateStaffAttendInput!
   ): Attend!
 
   deleteStaff(
+    authToken: String!
     id: ID!
   ): Staff!
 
   #attend mutation
   cronUpdateAttend(
-    apiKey: String!
+    authToken: String!
   ): Attend!
 
 }
@@ -41,6 +46,16 @@ input updateStaffAttendInput {
   isAttend: Boolean
   inTimeIndex: Int
   outTimeIndex: Int
+}
+
+
+type Admin {
+  id: ID!
+  name: String
+  email: String!
+  password: String!
+  createdAt: String!
+  updatedAt: String!
 }
 
 
