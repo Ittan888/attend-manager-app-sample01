@@ -13,8 +13,6 @@ services:
   prisma:
     image: prismagraphql/prisma:1.34
     restart: always
-    ports:
-      - 4466:4466
     environment:
       PRISMA_CONFIG: |
         port: 4466
@@ -38,5 +36,21 @@ services:
     depends_on:
       - postgres
 
+  graphql-server:
+    build:
+      context: ./graphql-server
+    volumes:
+      - ./graphql-server:/go/src/app
+    working_dir: /go/src/app
+    ports:
+      - 5000:8080
+    depends_on:
+      - postgres
+      - prisma
+    links:
+      - prisma:prisma
+    restart: always
+    
+    
 volumes:
   postgres: ~
