@@ -42,6 +42,13 @@ func (r *attendResolver) StaffInfo(ctx context.Context, obj *prisma.Attend) (*pr
 type mutationResolver struct{ *Resolver }
 
 func (r *mutationResolver) CreateStaff(ctx context.Context, authToken string, name string, age int, profileImagePath *string) (*prisma.Staff, error) {
+	ax := AuthExaminer.Summon(authToken, r.Prisma)
+	_, err := ax.ServeAuthResult(ctx)
+
+	if err != nil {
+		panic("403 認可エラー")
+	}
+
 	addm := AttendsDefaultDataManager.Summon()
 	staff, err := r.Prisma.CreateStaff(prisma.StaffCreateInput{
 		Name:             &name,
@@ -55,6 +62,13 @@ func (r *mutationResolver) CreateStaff(ctx context.Context, authToken string, na
 	return staff, err
 }
 func (r *mutationResolver) UpdateStaffProfile(ctx context.Context, authToken string, id string, name *string, age *int, profileImagePath *string) (*prisma.Staff, error) {
+	ax := AuthExaminer.Summon(authToken, r.Prisma)
+	_, err := ax.ServeAuthResult(ctx)
+
+	if err != nil {
+		panic("403 認可エラー")
+	}
+	
 	staff, _ := r.Prisma.Staff(prisma.StaffWhereUniqueInput{ID: &id}).Exec(ctx)
 
 	if name == nil {
@@ -80,6 +94,13 @@ func (r *mutationResolver) UpdateStaffProfile(ctx context.Context, authToken str
 	return re, err
 }
 func (r *mutationResolver) UpdateStaffAttend(ctx context.Context, authToken string, staffID string, attendID string, input UpdateStaffAttendInput) (*prisma.Attend, error) {
+	ax := AuthExaminer.Summon(authToken, r.Prisma)
+	_, err := ax.ServeAuthResult(ctx)
+
+	if err != nil {
+		panic("403 認可エラー")
+	}
+	
 	attend, _ := r.Prisma.Attend(prisma.AttendWhereUniqueInput{ID: &attendID}).Exec(ctx)
 
 	if input.IsAttend == nil {
@@ -96,7 +117,7 @@ func (r *mutationResolver) UpdateStaffAttend(ctx context.Context, authToken stri
 		input.OutTimeIndex = &o2
 	}
 
-	_, err := r.Prisma.UpdateManyAttends(prisma.AttendUpdateManyParams{
+	_, reterr := r.Prisma.UpdateManyAttends(prisma.AttendUpdateManyParams{
 		Where: &prisma.AttendWhereInput{
 			And: []prisma.AttendWhereInput{
 				prisma.AttendWhereInput{ID: &attendID},
@@ -112,29 +133,27 @@ func (r *mutationResolver) UpdateStaffAttend(ctx context.Context, authToken stri
 		},
 	}).Exec(ctx)
 
-	if err != nil {
-		panic(err)
+	if reterr != nil {
+		panic(reterr)
 	}
 
 	re, _ := r.Prisma.Attend(prisma.AttendWhereUniqueInput{ID: &attendID}).Exec(ctx)
 
-	return re, err
+	return re, reterr
 }
 func (r *mutationResolver) DeleteStaff(ctx context.Context, authToken string, id string) (*prisma.Staff, error) {
-
-	ax := AuthExaminer.Summon(authToken)
-
-	_, err := ax.ServeAuthResult()
+	ax := AuthExaminer.Summon(authToken, r.Prisma)
+	_, err := ax.ServeAuthResult(ctx)
 
 	if err != nil {
-		panic(err)
+		panic("403 認可エラー")
 	}
-	// staff, err := r.Prisma.DeleteStaff(prisma.StaffWhereUniqueInput{
-	// 	ID: &id,
-	// }).Exec(ctx)
 
-	// return staff, err
-	panic("実装中")
+	staff, err := r.Prisma.DeleteStaff(prisma.StaffWhereUniqueInput{
+		ID: &id,
+	}).Exec(ctx)
+
+	return staff, err
 }
 func (r *mutationResolver) CronUpdateAttend(ctx context.Context, authToken string) (*prisma.Attend, error) {
 	panic("not implemented")
