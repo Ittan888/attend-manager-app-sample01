@@ -1,0 +1,7 @@
+mutation DeleteStaff($authToken: String!, $id: ID!) {
+    deleteStaff(authToken: $authToken, id: $id) {
+        id
+        name
+        age
+    }
+}

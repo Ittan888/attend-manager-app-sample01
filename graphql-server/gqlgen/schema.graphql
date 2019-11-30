@@ -2,7 +2,7 @@ type Query {
   staffs: [Staff!]!
   staff(id: ID!): Staff!
   attend(staffId: ID! attendId: ID!): Attend!
-  getAuthToken(email: String! password: String!): String!
+  authToken(email: String! password: String!): Auth!
 }
 
 type Mutation {
@@ -48,6 +48,10 @@ input updateStaffAttendInput {
   outTimeIndex: Int
 }
 
+type Auth {
+    user: String!
+    token: String!
+}
 
 type Admin {
   id: ID!

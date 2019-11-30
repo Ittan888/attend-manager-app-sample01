@@ -65,6 +65,11 @@ type ComplexityRoot struct {
 		UpdatedAt     func(childComplexity int) int
 	}
 
+	Auth struct {
+		Token func(childComplexity int) int
+		User  func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateStaff        func(childComplexity int, authToken string, name string, age int, profileImagePath *string) int
 		CronUpdateAttend   func(childComplexity int, authToken string) int
@@ -74,10 +79,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Attend       func(childComplexity int, staffID string, attendID string) int
-		GetAuthToken func(childComplexity int, email string, password string) int
-		Staff        func(childComplexity int, id string) int
-		Staffs       func(childComplexity int) int
+		Attend    func(childComplexity int, staffID string, attendID string) int
+		AuthToken func(childComplexity int, email string, password string) int
+		Staff     func(childComplexity int, id string) int
+		Staffs    func(childComplexity int) int
 	}
 
 	Staff struct {
@@ -105,7 +110,7 @@ type QueryResolver interface {
 	Staffs(ctx context.Context) ([]*prisma.Staff, error)
 	Staff(ctx context.Context, id string) (*prisma.Staff, error)
 	Attend(ctx context.Context, staffID string, attendID string) (*prisma.Attend, error)
-	GetAuthToken(ctx context.Context, email string, password string) (string, error)
+	AuthToken(ctx context.Context, email string, password string) (*Auth, error)
 }
 type StaffResolver interface {
 	Attends(ctx context.Context, obj *prisma.Staff) ([]*prisma.Attend, error)
@@ -224,6 +229,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Attend.UpdatedAt(childComplexity), true
 
+	case "Auth.token":
+		if e.complexity.Auth.Token == nil {
+			break
+		}
+
+		return e.complexity.Auth.Token(childComplexity), true
+
+	case "Auth.user":
+		if e.complexity.Auth.User == nil {
+			break
+		}
+
+		return e.complexity.Auth.User(childComplexity), true
+
 	case "Mutation.createStaff":
 		if e.complexity.Mutation.CreateStaff == nil {
 			break
@@ -296,17 +315,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Attend(childComplexity, args["staffId"].(string), args["attendId"].(string)), true
 
-	case "Query.getAuthToken":
-		if e.complexity.Query.GetAuthToken == nil {
+	case "Query.authToken":
+		if e.complexity.Query.AuthToken == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getAuthToken_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_authToken_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAuthToken(childComplexity, args["email"].(string), args["password"].(string)), true
+		return e.complexity.Query.AuthToken(childComplexity, args["email"].(string), args["password"].(string)), true
 
 	case "Query.staff":
 		if e.complexity.Query.Staff == nil {
@@ -442,7 +461,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
   staffs: [Staff!]!
   staff(id: ID!): Staff!
   attend(staffId: ID! attendId: ID!): Attend!
-  getAuthToken(email: String! password: String!): String!
+  authToken(email: String! password: String!): Auth!
 }
 
 type Mutation {
@@ -488,6 +507,10 @@ input updateStaffAttendInput {
   outTimeIndex: Int
 }
 
+type Auth {
+    user: String!
+    token: String!
+}
 
 type Admin {
   id: ID!
@@ -723,7 +746,7 @@ func (ec *executionContext) field_Query_attend_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getAuthToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_authToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1310,6 +1333,80 @@ func (ec *executionContext) _Attend_updatedAt(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Auth_user(ctx context.Context, field graphql.CollectedField, obj *Auth) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Auth",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Auth_token(ctx context.Context, field graphql.CollectedField, obj *Auth) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Auth",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Token, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createStaff(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -1655,7 +1752,7 @@ func (ec *executionContext) _Query_attend(ctx context.Context, field graphql.Col
 	return ec.marshalNAttend2ᚖdemo13ᚋprismaᚐAttend(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getAuthToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_authToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -1672,7 +1769,7 @@ func (ec *executionContext) _Query_getAuthToken(ctx context.Context, field graph
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_getAuthToken_args(ctx, rawArgs)
+	args, err := ec.field_Query_authToken_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1681,7 +1778,7 @@ func (ec *executionContext) _Query_getAuthToken(ctx context.Context, field graph
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAuthToken(rctx, args["email"].(string), args["password"].(string))
+		return ec.resolvers.Query().AuthToken(rctx, args["email"].(string), args["password"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1693,10 +1790,10 @@ func (ec *executionContext) _Query_getAuthToken(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*Auth)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNAuth2ᚖdemo13ᚋgqlgenᚐAuth(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3333,6 +3430,38 @@ func (ec *executionContext) _Attend(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var authImplementors = []string{"Auth"}
+
+func (ec *executionContext) _Auth(ctx context.Context, sel ast.SelectionSet, obj *Auth) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, authImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Auth")
+		case "user":
+			out.Values[i] = ec._Auth_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "token":
+			out.Values[i] = ec._Auth_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3441,7 +3570,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "getAuthToken":
+		case "authToken":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -3449,7 +3578,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAuthToken(ctx, field)
+				res = ec._Query_authToken(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3821,6 +3950,20 @@ func (ec *executionContext) marshalNAttend2ᚖdemo13ᚋprismaᚐAttend(ctx conte
 		return graphql.Null
 	}
 	return ec._Attend(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAuth2demo13ᚋgqlgenᚐAuth(ctx context.Context, sel ast.SelectionSet, v Auth) graphql.Marshaler {
+	return ec._Auth(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAuth2ᚖdemo13ᚋgqlgenᚐAuth(ctx context.Context, sel ast.SelectionSet, v *Auth) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Auth(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

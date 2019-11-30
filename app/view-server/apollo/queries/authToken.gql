@@ -1,0 +1,5 @@
+query AuthToken($email: String!, $password: String!) {
+    authToken(email: $email, password: $password) {
+        token
+    }
+}

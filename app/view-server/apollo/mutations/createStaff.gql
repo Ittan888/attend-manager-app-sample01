@@ -1,0 +1,7 @@
+mutation CreateStaff($authToken: String!, $name: String!, $age: Int!) {
+    createStaff(authToken: $authToken, name: $name, age: $age) {
+        id
+        name
+        age
+    }
+}

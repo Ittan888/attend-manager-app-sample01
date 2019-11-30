@@ -11,6 +11,11 @@ type Admin struct {
 	UpdatedAt string  `json:"updatedAt"`
 }
 
+type Auth struct {
+	User  string `json:"user"`
+	Token string `json:"token"`
+}
+
 type UpdateStaffAttendInput struct {
 	IsAttend     *bool `json:"isAttend"`
 	InTimeIndex  *int  `json:"inTimeIndex"`

@@ -68,7 +68,7 @@ func (r *mutationResolver) UpdateStaffProfile(ctx context.Context, authToken str
 	if err != nil {
 		panic("403 認可エラー")
 	}
-	
+
 	staff, _ := r.Prisma.Staff(prisma.StaffWhereUniqueInput{ID: &id}).Exec(ctx)
 
 	if name == nil {
@@ -100,7 +100,7 @@ func (r *mutationResolver) UpdateStaffAttend(ctx context.Context, authToken stri
 	if err != nil {
 		panic("403 認可エラー")
 	}
-	
+
 	attend, _ := r.Prisma.Attend(prisma.AttendWhereUniqueInput{ID: &attendID}).Exec(ctx)
 
 	if input.IsAttend == nil {
@@ -213,7 +213,7 @@ func (r *staffResolver) Attends(ctx context.Context, obj *prisma.Staff) ([]*pris
 	return re, err
 }
 
-func (r *queryResolver) GetAuthToken(ctx context.Context, email string, password string) (string, error) {
+func (r *queryResolver) AuthToken(ctx context.Context, email string, password string) (*Auth, error) {
 
 	authorizedUsers, err := r.Prisma.Admins(&prisma.AdminsParams{
 		Where: &prisma.AdminWhereInput{
@@ -239,5 +239,8 @@ func (r *queryResolver) GetAuthToken(ctx context.Context, email string, password
 		panic(err)
 	}
 
-	return token, err
+	return &Auth{
+		User:  authorizedUsers[0].Email,
+		Token: token,
+	}, err
 }

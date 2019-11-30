@@ -1,0 +1,12 @@
+mutation UpdateStaffProfile(
+    $authToken: String!
+    $id: ID!
+    $name: String!
+    $age: Int!
+) {
+    updateStaffProfile(authToken: $authToken, id: $id, name: $name, age: $age) {
+        id
+        name
+        age
+    }
+}
